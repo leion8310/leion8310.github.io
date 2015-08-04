@@ -129,6 +129,990 @@
 	<article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
 		<div class="meta">
 			<div class="date">
+				<time datetime="2015-08-04T14:42:29+08:00" itemprop="datePublished">2015/8/4</time>
+			</div>
+			<div class="tags">posted in 
+			
+			    <a class='category' href='Vim.html'>Vim</a>&nbsp;
+			 
+			</div>
+		</div>
+		<h1 class="title" itemprop="name"><a href="14386705490083.html" itemprop="url">
+		VIM 配置</a></h1>
+		<div class="entry-content" itemprop="articleBody">
+			
+			<pre><code>&quot; =============================================================================
+&quot;        &lt;&lt; 判断操作系统是 Windows 还是 Linux 和判断是终端还是 Gvim &gt;&gt;
+&quot; =============================================================================
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; 判断操作系统是否是 Windows 还是 Linux &gt;
+&quot; -----------------------------------------------------------------------------
+let g:iswindows = 0
+let g:islinux = 0
+if(has(&quot;win32&quot;) || has(&quot;win64&quot;) || has(&quot;win95&quot;) || has(&quot;win16&quot;))
+    let g:iswindows = 1
+else
+    let g:islinux = 1
+endif
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; 判断是终端还是 Gvim &gt;
+&quot; -----------------------------------------------------------------------------
+if has(&quot;gui_running&quot;)
+    let g:isGUI = 1
+else
+    let g:isGUI = 0
+endif
+ 
+ 
+&quot; =============================================================================
+&quot;                          &lt;&lt; 以下为软件默认配置 &gt;&gt;
+&quot; =============================================================================
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; Windows Gvim 默认配置&gt; 做了一点修改
+&quot; -----------------------------------------------------------------------------
+if (g:iswindows &amp;&amp; g:isGUI)
+    source $VIMRUNTIME/vimrc_example.vim
+    source $VIMRUNTIME/mswin.vim
+    behave mswin
+    set diffexpr=MyDiff()
+ 
+    function MyDiff()
+        let opt = &#39;-a --binary &#39;
+        if &amp;diffopt =~ &#39;icase&#39; | let opt = opt . &#39;-i &#39; | endif
+        if &amp;diffopt =~ &#39;iwhite&#39; | let opt = opt . &#39;-b &#39; | endif
+        let arg1 = v:fname_in
+        if arg1 =~ &#39; &#39; | let arg1 = &#39;&quot;&#39; . arg1 . &#39;&quot;&#39; | endif
+        let arg2 = v:fname_new
+        if arg2 =~ &#39; &#39; | let arg2 = &#39;&quot;&#39; . arg2 . &#39;&quot;&#39; | endif
+        let arg3 = v:fname_out
+        if arg3 =~ &#39; &#39; | let arg3 = &#39;&quot;&#39; . arg3 . &#39;&quot;&#39; | endif
+        let eq = &#39;&#39;
+        if $VIMRUNTIME =~ &#39; &#39;
+            if &amp;sh =~ &#39;\&lt;cmd&#39;
+                let cmd = &#39;&quot;&quot;&#39; . $VIMRUNTIME . &#39;\diff&quot;&#39;
+                let eq = &#39;&quot;&#39;
+            else
+                let cmd = substitute($VIMRUNTIME, &#39; &#39;, &#39;&quot; &#39;, &#39;&#39;) . &#39;\diff&quot;&#39;
+            endif
+        else
+            let cmd = $VIMRUNTIME . &#39;\diff&#39;
+        endif
+        silent execute &#39;!&#39; . cmd . &#39; &#39; . opt . arg1 . &#39; &#39; . arg2 . &#39; &gt; &#39; . arg3 . eq
+    endfunction
+endif
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; Linux Gvim/Vim 默认配置&gt; 做了一点修改
+&quot; -----------------------------------------------------------------------------
+if g:islinux
+    set hlsearch        &quot;高亮搜索
+    set incsearch       &quot;在输入要搜索的文字时，实时匹配
+ 
+    &quot; Uncomment the following to have Vim jump to the last position when
+    &quot; reopening a file
+    if has(&quot;autocmd&quot;)
+        au BufReadPost * if line(&quot;&#39;\&quot;&quot;) &gt; 1 &amp;&amp; line(&quot;&#39;\&quot;&quot;) &lt;= line(&quot;$&quot;) | exe &quot;normal! g&#39;\&quot;&quot; | endif
+    endif
+ 
+    if g:isGUI
+        &quot; Source a global configuration file if available
+        if filereadable(&quot;/etc/vim/gvimrc.local&quot;)
+            source /etc/vim/gvimrc.local
+        endif
+    else
+        &quot; This line should not be removed as it ensures that various options are
+        &quot; properly set to work with the Vim-related packages available in Debian.
+        runtime! debian.vim
+ 
+        &quot; Vim5 and later versions support syntax highlighting. Uncommenting the next
+        &quot; line enables syntax highlighting by default.
+        if has(&quot;syntax&quot;)
+            syntax on
+        endif
+ 
+        set mouse=a                    &quot; 在任何模式下启用鼠标
+        set t_Co=256                   &quot; 在终端启用256色
+        set backspace=2                &quot; 设置退格键可用
+ 
+        &quot; Source a global configuration file if available
+        if filereadable(&quot;/etc/vim/vimrc.local&quot;)
+            source /etc/vim/vimrc.local
+        endif
+    endif
+endif
+ 
+ 
+&quot; =============================================================================
+&quot;                          &lt;&lt; 以下为用户自定义配置 &gt;&gt;
+&quot; =============================================================================
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; Vundle 插件管理工具配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 用于更方便的管理vim插件，具体用法参考 :h vundle 帮助
+&quot; Vundle工具安装方法为在终端输入如下命令
+&quot; git clone https://github.com/gmarik/vundle.git ~/.vim/bundle/vundle
+&quot; 如果想在 windows 安装就必需先安装 &quot;git for window&quot;，可查阅网上资料
+ 
+set nocompatible                                      &quot;禁用 Vi 兼容模式
+filetype off                                          &quot;禁用文件类型侦测
+ 
+if g:islinux
+    set rtp+=~/.vim/bundle/vundle/
+    call vundle#rc()
+else
+    set rtp+=$VIM/vimfiles/bundle/vundle/
+    call vundle#rc(&#39;$VIM/vimfiles/bundle/&#39;)
+endif
+ 
+&quot; 使用Vundle来管理插件，这个必须要有。
+Bundle &#39;gmarik/vundle&#39;
+ 
+&quot; 以下为要安装或更新的插件，不同仓库都有（具体书写规范请参考帮助）
+Bundle &#39;a.vim&#39;
+Bundle &#39;Align&#39;
+Bundle &#39;jiangmiao/auto-pairs&#39;
+Bundle &#39;bufexplorer.zip&#39;
+Bundle &#39;ccvext.vim&#39;
+Bundle &#39;cSyntaxAfter&#39;
+Bundle &#39;ctrlpvim/ctrlp.vim&#39;
+Bundle &#39;mattn/emmet-vim&#39;
+Bundle &#39;Yggdroot/indentLine&#39;
+Bundle &#39;vim-javacompleteex&#39;
+Bundle &#39;Mark--Karkat&#39;
+Bundle &#39;Shougo/neocomplcache.vim&#39;
+Bundle &#39;scrooloose/nerdcommenter&#39;
+Bundle &#39;scrooloose/nerdtree&#39;
+Bundle &#39;OmniCppComplete&#39;
+Bundle &#39;Lokaltog/vim-powerline&#39;
+Bundle &#39;repeat.vim&#39;
+Bundle &#39;msanders/snipmate.vim&#39;
+Bundle &#39;wesleyche/SrcExpl&#39;
+Bundle &#39;std_c.zip&#39;
+Bundle &#39;tpope/vim-surround&#39;
+Bundle &#39;scrooloose/syntastic&#39;
+Bundle &#39;majutsushi/tagbar&#39;
+Bundle &#39;taglist.vim&#39;
+Bundle &#39;TxtBrowser&#39;
+Bundle &#39;ZoomWin&#39;
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; 编码配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 注：使用utf-8格式后，软件与程序源码、文件路径不能有中文，否则报错
+set encoding=utf-8                                    &quot;设置gvim内部编码，默认不更改
+set fileencoding=utf-8                                &quot;设置当前文件编码，可以更改，如：gbk（同cp936）
+set fileencodings=ucs-bom,utf-8,gbk,cp936,latin-1     &quot;设置支持打开的文件的编码
+ 
+&quot; 文件格式，默认 ffs=dos,unix
+set fileformat=unix                                   &quot;设置新（当前）文件的&lt;EOL&gt;格式，可以更改，如：dos（windows系统常用）
+set fileformats=unix,dos,mac                          &quot;给出文件的&lt;EOL&gt;格式类型
+ 
+if (g:iswindows &amp;&amp; g:isGUI)
+    &quot;解决菜单乱码
+    source $VIMRUNTIME/delmenu.vim
+    source $VIMRUNTIME/menu.vim
+ 
+    &quot;解决consle输出乱码
+    language messages zh_CN.utf-8
+endif
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; 编写文件时的配置 &gt;
+&quot; -----------------------------------------------------------------------------
+filetype on                                           &quot;启用文件类型侦测
+filetype plugin on                                    &quot;针对不同的文件类型加载对应的插件
+filetype plugin indent on                             &quot;启用缩进
+set smartindent                                       &quot;启用智能对齐方式
+set expandtab                                         &quot;将Tab键转换为空格
+set tabstop=4                                         &quot;设置Tab键的宽度，可以更改，如：宽度为2
+set shiftwidth=4                                      &quot;换行时自动缩进宽度，可更改（宽度同tabstop）
+set smarttab                                          &quot;指定按一次backspace就删除shiftwidth宽度
+set foldenable                                        &quot;启用折叠
+set foldmethod=indent                                 &quot;indent 折叠方式
+&quot; set foldmethod=marker                                &quot;marker 折叠方式
+ 
+&quot; 常规模式下用空格键来开关光标行所在折叠（注：zR 展开所有折叠，zM 关闭所有折叠）
+nnoremap &lt;space&gt; @=((foldclosed(line(&#39;.&#39;)) &lt; 0) ? &#39;zc&#39; : &#39;zo&#39;)&lt;CR&gt;
+ 
+&quot; 当文件在外部被修改，自动更新该文件
+set autoread
+ 
+&quot; 常规模式下输入 cS 清除行尾空格
+nmap cS :%s/\s\+$//g&lt;CR&gt;:noh&lt;CR&gt;
+ 
+&quot; 常规模式下输入 cM 清除行尾 ^M 符号
+nmap cM :%s/\r$//g&lt;CR&gt;:noh&lt;CR&gt;
+ 
+set ignorecase                                        &quot;搜索模式里忽略大小写
+set smartcase                                         &quot;如果搜索模式包含大写字符，不使用 &#39;ignorecase&#39; 选项，只有在输入搜索模式并且打开 &#39;ignorecase&#39; 选项时才会使用
+&quot; set noincsearch                                       &quot;在输入要搜索的文字时，取消实时匹配
+ 
+&quot; Ctrl + K 插入模式下光标向上移动
+imap &lt;c-k&gt; &lt;Up&gt;
+ 
+&quot; Ctrl + J 插入模式下光标向下移动
+imap &lt;c-j&gt; &lt;Down&gt;
+ 
+&quot; Ctrl + H 插入模式下光标向左移动
+imap &lt;c-h&gt; &lt;Left&gt;
+ 
+&quot; Ctrl + L 插入模式下光标向右移动
+imap &lt;c-l&gt; &lt;Right&gt;
+ 
+&quot; 启用每行超过80列的字符提示（字体变蓝并加下划线），不启用就注释掉
+au BufWinEnter * let w:m2=matchadd(&#39;Underlined&#39;, &#39;\%&gt;&#39; . 80 . &#39;v.\+&#39;, -1)
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; 界面配置 &gt;
+&quot; -----------------------------------------------------------------------------
+set number                                            &quot;显示行号
+set laststatus=2                                      &quot;启用状态栏信息
+set cmdheight=2                                       &quot;设置命令行的高度为2，默认为1
+set cursorline                                        &quot;突出显示当前行
+&quot; set guifont=YaHei_Consolas_Hybrid:h10                 &quot;设置字体:字号（字体名称空格用下划线代替）
+set nowrap                                            &quot;设置不自动换行
+set shortmess=atI                                     &quot;去掉欢迎界面
+ 
+&quot; 设置 gVim 窗口初始位置及大小
+if g:isGUI
+    &quot; au GUIEnter * simalt ~x                           &quot;窗口启动时自动最大化
+    winpos 100 10                                     &quot;指定窗口出现的位置，坐标原点在屏幕左上角
+    set lines=38 columns=120                          &quot;指定窗口大小，lines为高度，columns为宽度
+endif
+ 
+&quot; 设置代码配色方案
+if g:isGUI
+    colorscheme Tomorrow-Night-Eighties               &quot;Gvim配色方案
+else
+    colorscheme Tomorrow-Night-Eighties               &quot;终端配色方案
+endif
+ 
+&quot; 显示/隐藏菜单栏、工具栏、滚动条，可用 Ctrl + F11 切换
+if g:isGUI
+    set guioptions-=m
+    set guioptions-=T
+    set guioptions-=r
+    set guioptions-=L
+    nmap &lt;silent&gt; &lt;c-F11&gt; :if &amp;guioptions =~# &#39;m&#39; &lt;Bar&gt;
+        \set guioptions-=m &lt;Bar&gt;
+        \set guioptions-=T &lt;Bar&gt;
+        \set guioptions-=r &lt;Bar&gt;
+        \set guioptions-=L &lt;Bar&gt;
+    \else &lt;Bar&gt;
+        \set guioptions+=m &lt;Bar&gt;
+        \set guioptions+=T &lt;Bar&gt;
+        \set guioptions+=r &lt;Bar&gt;
+        \set guioptions+=L &lt;Bar&gt;
+    \endif&lt;CR&gt;
+endif
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; 编译、连接、运行配置 (目前只配置了C、C++、Java语言)&gt;
+&quot; -----------------------------------------------------------------------------
+&quot; F9 一键保存、编译、连接存并运行
+nmap &lt;F9&gt; :call Run()&lt;CR&gt;
+imap &lt;F9&gt; &lt;ESC&gt;:call Run()&lt;CR&gt;
+ 
+&quot; Ctrl + F9 一键保存并编译
+nmap &lt;c-F9&gt; :call Compile()&lt;CR&gt;
+imap &lt;c-F9&gt; &lt;ESC&gt;:call Compile()&lt;CR&gt;
+ 
+&quot; Ctrl + F10 一键保存并连接
+nmap &lt;c-F10&gt; :call Link()&lt;CR&gt;
+imap &lt;c-F10&gt; &lt;ESC&gt;:call Link()&lt;CR&gt;
+ 
+let s:LastShellReturn_C = 0
+let s:LastShellReturn_L = 0
+let s:ShowWarning = 1
+let s:Obj_Extension = &#39;.o&#39;
+let s:Exe_Extension = &#39;.exe&#39;
+let s:Class_Extension = &#39;.class&#39;
+let s:Sou_Error = 0
+ 
+let s:windows_CFlags = &#39;gcc\ -fexec-charset=gbk\ -Wall\ -g\ -O0\ -c\ %\ -o\ %&lt;.o&#39;
+let s:linux_CFlags = &#39;gcc\ -Wall\ -g\ -O0\ -c\ %\ -o\ %&lt;.o&#39;
+ 
+let s:windows_CPPFlags = &#39;g++\ -fexec-charset=gbk\ -Wall\ -g\ -O0\ -c\ %\ -o\ %&lt;.o&#39;
+let s:linux_CPPFlags = &#39;g++\ -Wall\ -g\ -O0\ -c\ %\ -o\ %&lt;.o&#39;
+ 
+let s:JavaFlags = &#39;javac\ %&#39;
+ 
+func! Compile()
+    exe &quot;:ccl&quot;
+    exe &quot;:update&quot;
+    let s:Sou_Error = 0
+    let s:LastShellReturn_C = 0
+    let Sou = expand(&quot;%:p&quot;)
+    let v:statusmsg = &#39;&#39;
+    if expand(&quot;%:e&quot;) == &quot;c&quot; || expand(&quot;%:e&quot;) == &quot;cpp&quot; || expand(&quot;%:e&quot;) == &quot;cxx&quot;
+        let Obj = expand(&quot;%:p:r&quot;).s:Obj_Extension
+        let Obj_Name = expand(&quot;%:p:t:r&quot;).s:Obj_Extension
+        if !filereadable(Obj) || (filereadable(Obj) &amp;&amp; (getftime(Obj) &lt; getftime(Sou)))
+            redraw!
+            if expand(&quot;%:e&quot;) == &quot;c&quot;
+                if g:iswindows
+                    exe &quot;:setlocal makeprg=&quot;.s:windows_CFlags
+                else
+                    exe &quot;:setlocal makeprg=&quot;.s:linux_CFlags
+                endif
+                echohl WarningMsg | echo &quot; compiling...&quot;
+                silent make
+            elseif expand(&quot;%:e&quot;) == &quot;cpp&quot; || expand(&quot;%:e&quot;) == &quot;cxx&quot;
+                if g:iswindows
+                    exe &quot;:setlocal makeprg=&quot;.s:windows_CPPFlags
+                else
+                    exe &quot;:setlocal makeprg=&quot;.s:linux_CPPFlags
+                endif
+                echohl WarningMsg | echo &quot; compiling...&quot;
+                silent make
+            endif
+            redraw!
+            if v:shell_error != 0
+                let s:LastShellReturn_C = v:shell_error
+            endif
+            if g:iswindows
+                if s:LastShellReturn_C != 0
+                    exe &quot;:bo cope&quot;
+                    echohl WarningMsg | echo &quot; compilation failed&quot;
+                else
+                    if s:ShowWarning
+                        exe &quot;:bo cw&quot;
+                    endif
+                    echohl WarningMsg | echo &quot; compilation successful&quot;
+                endif
+            else
+                if empty(v:statusmsg)
+                    echohl WarningMsg | echo &quot; compilation successful&quot;
+                else
+                    exe &quot;:bo cope&quot;
+                endif
+            endif
+        else
+            echohl WarningMsg | echo &quot;&quot;Obj_Name&quot;is up to date&quot;
+        endif
+    elseif expand(&quot;%:e&quot;) == &quot;java&quot;
+        let class = expand(&quot;%:p:r&quot;).s:Class_Extension
+        let class_Name = expand(&quot;%:p:t:r&quot;).s:Class_Extension
+        if !filereadable(class) || (filereadable(class) &amp;&amp; (getftime(class) &lt; getftime(Sou)))
+            redraw!
+            exe &quot;:setlocal makeprg=&quot;.s:JavaFlags
+            echohl WarningMsg | echo &quot; compiling...&quot;
+            silent make
+            redraw!
+            if v:shell_error != 0
+                let s:LastShellReturn_C = v:shell_error
+            endif
+            if g:iswindows
+                if s:LastShellReturn_C != 0
+                    exe &quot;:bo cope&quot;
+                    echohl WarningMsg | echo &quot; compilation failed&quot;
+                else
+                    if s:ShowWarning
+                        exe &quot;:bo cw&quot;
+                    endif
+                    echohl WarningMsg | echo &quot; compilation successful&quot;
+                endif
+            else
+                if empty(v:statusmsg)
+                    echohl WarningMsg | echo &quot; compilation successful&quot;
+                else
+                    exe &quot;:bo cope&quot;
+                endif
+            endif
+        else
+            echohl WarningMsg | echo &quot;&quot;class_Name&quot;is up to date&quot;
+        endif
+    else
+        let s:Sou_Error = 1
+        echohl WarningMsg | echo &quot; please choose the correct source file&quot;
+    endif
+    exe &quot;:setlocal makeprg=make&quot;
+endfunc
+ 
+func! Link()
+    call Compile()
+    if s:Sou_Error || s:LastShellReturn_C != 0
+        return
+    endif
+    if expand(&quot;%:e&quot;) == &quot;c&quot; || expand(&quot;%:e&quot;) == &quot;cpp&quot; || expand(&quot;%:e&quot;) == &quot;cxx&quot;
+        let s:LastShellReturn_L = 0
+        let Sou = expand(&quot;%:p&quot;)
+        let Obj = expand(&quot;%:p:r&quot;).s:Obj_Extension
+        if g:iswindows
+            let Exe = expand(&quot;%:p:r&quot;).s:Exe_Extension
+            let Exe_Name = expand(&quot;%:p:t:r&quot;).s:Exe_Extension
+        else
+            let Exe = expand(&quot;%:p:r&quot;)
+            let Exe_Name = expand(&quot;%:p:t:r&quot;)
+        endif
+        let v:statusmsg = &#39;&#39;
+        if filereadable(Obj) &amp;&amp; (getftime(Obj) &gt;= getftime(Sou))
+            redraw!
+            if !executable(Exe) || (executable(Exe) &amp;&amp; getftime(Exe) &lt; getftime(Obj))
+                if expand(&quot;%:e&quot;) == &quot;c&quot;
+                    setlocal makeprg=gcc\ -o\ %&lt;\ %&lt;.o
+                    echohl WarningMsg | echo &quot; linking...&quot;
+                    silent make
+                elseif expand(&quot;%:e&quot;) == &quot;cpp&quot; || expand(&quot;%:e&quot;) == &quot;cxx&quot;
+                    setlocal makeprg=g++\ -o\ %&lt;\ %&lt;.o
+                    echohl WarningMsg | echo &quot; linking...&quot;
+                    silent make
+                endif
+                redraw!
+                if v:shell_error != 0
+                    let s:LastShellReturn_L = v:shell_error
+                endif
+                if g:iswindows
+                    if s:LastShellReturn_L != 0
+                        exe &quot;:bo cope&quot;
+                        echohl WarningMsg | echo &quot; linking failed&quot;
+                    else
+                        if s:ShowWarning
+                            exe &quot;:bo cw&quot;
+                        endif
+                        echohl WarningMsg | echo &quot; linking successful&quot;
+                    endif
+                else
+                    if empty(v:statusmsg)
+                        echohl WarningMsg | echo &quot; linking successful&quot;
+                    else
+                        exe &quot;:bo cope&quot;
+                    endif
+                endif
+            else
+                echohl WarningMsg | echo &quot;&quot;Exe_Name&quot;is up to date&quot;
+            endif
+        endif
+        setlocal makeprg=make
+    elseif expand(&quot;%:e&quot;) == &quot;java&quot;
+        return
+    endif
+endfunc
+ 
+func! Run()
+    let s:ShowWarning = 0
+    call Link()
+    let s:ShowWarning = 1
+    if s:Sou_Error || s:LastShellReturn_C != 0 || s:LastShellReturn_L != 0
+        return
+    endif
+    let Sou = expand(&quot;%:p&quot;)
+    if expand(&quot;%:e&quot;) == &quot;c&quot; || expand(&quot;%:e&quot;) == &quot;cpp&quot; || expand(&quot;%:e&quot;) == &quot;cxx&quot;
+        let Obj = expand(&quot;%:p:r&quot;).s:Obj_Extension
+        if g:iswindows
+            let Exe = expand(&quot;%:p:r&quot;).s:Exe_Extension
+        else
+            let Exe = expand(&quot;%:p:r&quot;)
+        endif
+        if executable(Exe) &amp;&amp; getftime(Exe) &gt;= getftime(Obj) &amp;&amp; getftime(Obj) &gt;= getftime(Sou)
+            redraw!
+            echohl WarningMsg | echo &quot; running...&quot;
+            if g:iswindows
+                exe &quot;:!%&lt;.exe&quot;
+            else
+                if g:isGUI
+                    exe &quot;:!gnome-terminal -x bash -c &#39;./%&lt;; echo; echo 请按 Enter 键继续; read&#39;&quot;
+                else
+                    exe &quot;:!clear; ./%&lt;&quot;
+                endif
+            endif
+            redraw!
+            echohl WarningMsg | echo &quot; running finish&quot;
+        endif
+    elseif expand(&quot;%:e&quot;) == &quot;java&quot;
+        let class = expand(&quot;%:p:r&quot;).s:Class_Extension
+        if getftime(class) &gt;= getftime(Sou)
+            redraw!
+            echohl WarningMsg | echo &quot; running...&quot;
+            if g:iswindows
+                exe &quot;:!java %&lt;&quot;
+            else
+                if g:isGUI
+                    exe &quot;:!gnome-terminal -x bash -c &#39;java %&lt;; echo; echo 请按 Enter 键继续; read&#39;&quot;
+                else
+                    exe &quot;:!clear; java %&lt;&quot;
+                endif
+            endif
+            redraw!
+            echohl WarningMsg | echo &quot; running finish&quot;
+        endif
+    endif
+endfunc
+ 
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; 在浏览器中预览 Html 或 PHP 文件 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 修改前请先通读此模块，明白了再改以避免错误
+ 
+&quot; F5 加浏览器名称缩写调用浏览器预览，启用前先确定有安装相应浏览器，并在下面的配置好其安装目录
+if g:iswindows
+    &quot;以下为只支持Windows系统的浏览器
+ 
+    &quot; 调用系统IE浏览器预览，如果已卸载可将其注释
+    nmap &lt;F5&gt;ie :call ViewInBrowser(&quot;ie&quot;)&lt;cr&gt;
+    imap &lt;F5&gt;ie &lt;ESC&gt;:call ViewInBrowser(&quot;ie&quot;)&lt;cr&gt;
+ 
+    &quot; 调用IETester(IE测试工具)预览，如果有安装可取消注释
+    &quot; nmap &lt;F5&gt;ie6 :call ViewInBrowser(&quot;ie6&quot;)&lt;cr&gt;
+    &quot; imap &lt;F5&gt;ie6 &lt;ESC&gt;:call ViewInBrowser(&quot;ie6&quot;)&lt;cr&gt;
+    &quot; nmap &lt;F5&gt;ie7 :call ViewInBrowser(&quot;ie7&quot;)&lt;cr&gt;
+    &quot; imap &lt;F5&gt;ie7 &lt;ESC&gt;:call ViewInBrowser(&quot;ie7&quot;)&lt;cr&gt;
+    &quot; nmap &lt;F5&gt;ie8 :call ViewInBrowser(&quot;ie8&quot;)&lt;cr&gt;
+    &quot; imap &lt;F5&gt;ie8 &lt;ESC&gt;:call ViewInBrowser(&quot;ie8&quot;)&lt;cr&gt;
+    &quot; nmap &lt;F5&gt;ie9 :call ViewInBrowser(&quot;ie9&quot;)&lt;cr&gt;
+    &quot; imap &lt;F5&gt;ie9 &lt;ESC&gt;:call ViewInBrowser(&quot;ie9&quot;)&lt;cr&gt;
+    &quot; nmap &lt;F5&gt;ie10 :call ViewInBrowser(&quot;ie10&quot;)&lt;cr&gt;
+    &quot; imap &lt;F5&gt;ie10 &lt;ESC&gt;:call ViewInBrowser(&quot;ie10&quot;)&lt;cr&gt;
+    &quot; nmap &lt;F5&gt;iea :call ViewInBrowser(&quot;iea&quot;)&lt;cr&gt;
+    &quot; imap &lt;F5&gt;iea &lt;ESC&gt;:call ViewInBrowser(&quot;iea&quot;)&lt;cr&gt;
+elseif g:islinux
+    &quot;以下为只支持Linux系统的浏览器
+    &quot;暂未配置，待有时间再弄了
+endif
+ 
+&quot;以下为支持Windows与Linux系统的浏览器
+ 
+&quot; 调用Firefox浏览器预览，如果有安装可取消注释
+&quot; nmap &lt;F5&gt;ff :call ViewInBrowser(&quot;ff&quot;)&lt;cr&gt;
+&quot; imap &lt;F5&gt;ff &lt;ESC&gt;:call ViewInBrowser(&quot;ff&quot;)&lt;cr&gt;
+ 
+&quot; 调用Maxthon(遨游)浏览器预览，如果有安装可取消注释
+&quot; nmap &lt;F5&gt;ay :call ViewInBrowser(&quot;ay&quot;)&lt;cr&gt;
+&quot; imap &lt;F5&gt;ay &lt;ESC&gt;:call ViewInBrowser(&quot;ay&quot;)&lt;cr&gt;
+ 
+&quot; 调用Opera浏览器预览，如果有安装可取消注释
+&quot; nmap &lt;F5&gt;op :call ViewInBrowser(&quot;op&quot;)&lt;cr&gt;
+&quot; imap &lt;F5&gt;op &lt;ESC&gt;:call ViewInBrowser(&quot;op&quot;)&lt;cr&gt;
+ 
+&quot; 调用Chrome浏览器预览，如果有安装可取消注释
+&quot; nmap &lt;F5&gt;cr :call ViewInBrowser(&quot;cr&quot;)&lt;cr&gt;
+&quot; imap &lt;F5&gt;cr &lt;ESC&gt;:call ViewInBrowser(&quot;cr&quot;)&lt;cr&gt;
+ 
+&quot; 浏览器调用函数
+function! ViewInBrowser(name)
+    if expand(&quot;%:e&quot;) == &quot;php&quot; || expand(&quot;%:e&quot;) == &quot;html&quot;
+        exe &quot;:update&quot;
+        if g:iswindows
+            &quot;获取要预览的文件路径，并将路径中的&#39;\&#39;替换为&#39;/&#39;，同时将路径文字的编码转换为gbk（同cp936）
+            let file = iconv(substitute(expand(&quot;%:p&quot;), &#39;\&#39;, &#39;/&#39;, &quot;g&quot;), &quot;utf-8&quot;, &quot;gbk&quot;)
+ 
+            &quot;浏览器路径设置，路径中使用&#39;/&#39;斜杠，更改路径请更改双引号里的内容
+            &quot;下面只启用了系统IE浏览器，如需启用其它的可将其取消注释（得先安装，并配置好安装路径），也可按需增减
+            let SystemIE = &quot;C:/progra~1/intern~1/iexplore.exe&quot;  &quot;系统自带IE目录
+            &quot; let IETester = &quot;F:/IETester/IETester.exe&quot;           &quot;IETester程序目录（可按实际更改）
+            &quot; let Chrome = &quot;F:/Chrome/Chrome.exe&quot;                 &quot;Chrome程序目录（可按实际更改）
+            &quot; let Firefox = &quot;F:/Firefox/Firefox.exe&quot;              &quot;Firefox程序目录（可按实际更改）
+            &quot; let Opera = &quot;F:/Opera/opera.exe&quot;                    &quot;Opera程序目录（可按实际更改）
+            &quot; let Maxthon = &quot;C:/Progra~2/Maxthon/Bin/Maxthon.exe&quot; &quot;Maxthon程序目录（可按实际更改）
+ 
+            &quot;本地虚拟服务器设置，我测试的是phpStudy2014，可根据自己的修改，更改路径请更改双引号里的内容
+            let htdocs =&quot;F:/phpStudy2014/WWW/&quot;                  &quot;虚拟服务器地址或目录（可按实际更改）
+            let url = &quot;localhost&quot;                               &quot;虚拟服务器网址（可按实际更改）
+        elseif g:islinux
+            &quot;暂时还没有配置，有时间再弄了。
+        endif
+ 
+        &quot;浏览器调用缩写，可根据实际增减，注意，上面浏览器路径中没有定义过的变量（等号右边为变量）不能出现在下面哟（可将其注释或删除）
+        let l:browsers = {}                             &quot;定义缩写字典变量，此行不能删除或注释
+        &quot; let l:browsers[&quot;cr&quot;] = Chrome                   &quot;Chrome浏览器缩写
+        &quot; let l:browsers[&quot;ff&quot;] = Firefox                  &quot;Firefox浏览器缩写
+        &quot; let l:browsers[&quot;op&quot;] = Opera                    &quot;Opera浏览器缩写
+        &quot; let l:browsers[&quot;ay&quot;] = Maxthon                  &quot;遨游浏览器缩写
+        let l:browsers[&quot;ie&quot;] = SystemIE                 &quot;系统IE浏览器缩写
+        &quot; let l:browsers[&quot;ie6&quot;] = IETester.&quot;-ie6&quot;         &quot;调用IETESTER工具以IE6预览缩写（变量加参数）
+        &quot; let l:browsers[&quot;ie7&quot;] = IETester.&quot;-ie7&quot;         &quot;调用IETESTER工具以IE7预览缩写（变量加参数）
+        &quot; let l:browsers[&quot;ie8&quot;] = IETester.&quot;-ie8&quot;         &quot;调用IETESTER工具以IE8预览缩写（变量加参数）
+        &quot; let l:browsers[&quot;ie9&quot;] = IETester.&quot;-ie9&quot;         &quot;调用IETESTER工具以IE9预览缩写（变量加参数）
+        &quot; let l:browsers[&quot;ie10&quot;] = IETester.&quot;-ie10&quot;       &quot;调用IETESTER工具以IE10预览缩写（变量加参数）
+        &quot; let l:browsers[&quot;iea&quot;] = IETester.&quot;-al&quot;          &quot;调用IETESTER工具以支持的所有IE版本预览缩写（变量加参数）
+ 
+        if stridx(file, htdocs) == -1   &quot;文件不在本地虚拟服务器目录，则直接预览（但不能解析PHP文件）
+           exec &quot;:silent !start &quot;. l:browsers[a:name] .&quot; file://&quot; . file
+        else    &quot;文件在本地虚拟服务器目录，则调用本地虚拟服务器解析预览（先启动本地虚拟服务器）
+            let file = substitute(file, htdocs, &quot;http://&quot;.url.&quot;/&quot;, &quot;g&quot;)    &quot;转换文件路径为虚拟服务器网址路径
+            exec &quot;:silent !start &quot;. l:browsers[a:name] file
+        endif
+    else
+        echohl WarningMsg | echo &quot; please choose the correct source file&quot;
+    endif
+endfunction
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; 其它配置 &gt;
+&quot; -----------------------------------------------------------------------------
+set writebackup                             &quot;保存文件前建立备份，保存成功后删除该备份
+set nobackup                                &quot;设置无备份文件
+&quot; set noswapfile                              &quot;设置无临时文件
+&quot; set vb t_vb=                                &quot;关闭提示音
+ 
+ 
+&quot; =============================================================================
+&quot;                          &lt;&lt; 以下为常用插件配置 &gt;&gt;
+&quot; =============================================================================
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; a.vim 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 用于切换C/C++头文件
+&quot; :A     ---切换头文件并独占整个窗口
+&quot; :AV    ---切换头文件并垂直分割窗口
+&quot; :AS    ---切换头文件并水平分割窗口
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; Align 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 一个对齐的插件，用来——排版与对齐代码，功能强大，不过用到的机会不多
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; auto-pairs 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 用于括号与引号自动补全，不过会与函数原型提示插件echofunc冲突
+&quot; 所以我就没有加入echofunc插件
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; BufExplorer 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 快速轻松的在缓存中切换（相当于另一种多个文件间的切换方式）
+&quot; &lt;Leader&gt;be 在当前窗口显示缓存列表并打开选定文件
+&quot; &lt;Leader&gt;bs 水平分割窗口显示缓存列表，并在缓存列表窗口中打开选定文件
+&quot; &lt;Leader&gt;bv 垂直分割窗口显示缓存列表，并在缓存列表窗口中打开选定文件
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; ccvext.vim 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 用于对指定文件自动生成tags与cscope文件并连接
+&quot; 如果是Windows系统, 则生成的文件在源文件所在盘符根目录的.symbs目录下(如: X:\.symbs\)
+&quot; 如果是Linux系统, 则生成的文件在~/.symbs/目录下
+&quot; 具体用法可参考www.vim.org中此插件的说明
+&quot; &lt;Leader&gt;sy 自动生成tags与cscope文件并连接
+&quot; &lt;Leader&gt;sc 连接已存在的tags与cscope文件
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; cSyntaxAfter 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 高亮括号与运算符等
+au! BufRead,BufNewFile,BufEnter *.{c,cpp,h,java,javascript} call CSyntaxAfter()
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; ctrlp.vim 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 一个全路径模糊文件，缓冲区，最近最多使用，... 检索插件；详细帮助见 :h ctrlp
+&quot; 常规模式下输入：Ctrl + p 调用插件
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; emmet-vim（前身为Zen coding） 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; HTML/CSS代码快速编写神器，详细帮助见 :h emmet.txt
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; indentLine 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 用于显示对齐线，与 indent_guides 在显示方式上不同，根据自己喜好选择了
+&quot; 在终端上会有屏幕刷新的问题，这个问题能解决有更好了
+&quot; 开启/关闭对齐线
+nmap &lt;leader&gt;il :IndentLinesToggle&lt;CR&gt;
+ 
+&quot; 设置Gvim的对齐线样式
+if g:isGUI
+    let g:indentLine_char = &quot;┊&quot;
+    let g:indentLine_first_char = &quot;┊&quot;
+endif
+ 
+&quot; 设置终端对齐线颜色，如果不喜欢可以将其注释掉采用默认颜色
+let g:indentLine_color_term = 239
+ 
+&quot; 设置 GUI 对齐线颜色，如果不喜欢可以将其注释掉采用默认颜色
+&quot; let g:indentLine_color_gui = &#39;#A4E57E&#39;
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; vim-javacompleteex（也就是 javacomplete 增强版）插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; java 补全插件
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; Mark--Karkat（也就是 Mark） 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 给不同的单词高亮，表明不同的变量时很有用，详细帮助见 :h mark.txt
+ 
+&quot; &quot; -----------------------------------------------------------------------------
+&quot; &quot;  &lt; MiniBufExplorer 插件配置 &gt;
+&quot; &quot; -----------------------------------------------------------------------------
+&quot; &quot; 快速浏览和操作Buffer
+&quot; &quot; 主要用于同时打开多个文件并相与切换
+ 
+&quot; &quot; let g:miniBufExplMapWindowNavArrows = 1     &quot;用Ctrl加方向键切换到上下左右的窗口中去
+&quot; let g:miniBufExplMapWindowNavVim = 1        &quot;用&lt;C-k,j,h,l&gt;切换到上下左右的窗口中去
+&quot; let g:miniBufExplMapCTabSwitchBufs = 1      &quot;功能增强（不过好像只有在Windows中才有用）
+&quot; &quot;                                            &lt;C-Tab&gt; 向前循环切换到每个buffer上,并在但前窗口打开
+&quot; &quot;                                            &lt;C-S-Tab&gt; 向后循环切换到每个buffer上,并在当前窗口打开
+ 
+&quot; 在不使用 MiniBufExplorer 插件时也可用&lt;C-k,j,h,l&gt;切换到上下左右的窗口中去
+noremap &lt;c-k&gt; &lt;c-w&gt;k
+noremap &lt;c-j&gt; &lt;c-w&gt;j
+noremap &lt;c-h&gt; &lt;c-w&gt;h
+noremap &lt;c-l&gt; &lt;c-w&gt;l
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; neocomplcache 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 关键字补全、文件路径补全、tag补全等等，各种，非常好用，速度超快。
+let g:neocomplcache_enable_at_startup = 1     &quot;vim 启动时启用插件
+&quot; let g:neocomplcache_disable_auto_complete = 1 &quot;不自动弹出补全列表
+&quot; 在弹出补全列表后用 &lt;c-p&gt; 或 &lt;c-n&gt; 进行上下选择效果比较好
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; nerdcommenter 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 我主要用于C/C++代码注释(其它的也行)
+&quot; 以下为插件默认快捷键，其中的说明是以C/C++为例的，其它语言类似
+&quot; &lt;Leader&gt;ci 以每行一个 /* */ 注释选中行(选中区域所在行)，再输入则取消注释
+&quot; &lt;Leader&gt;cm 以一个 /* */ 注释选中行(选中区域所在行)，再输入则称重复注释
+&quot; &lt;Leader&gt;cc 以每行一个 /* */ 注释选中行或区域，再输入则称重复注释
+&quot; &lt;Leader&gt;cu 取消选中区域(行)的注释，选中区域(行)内至少有一个 /* */
+&quot; &lt;Leader&gt;ca 在/*...*/与//这两种注释方式中切换（其它语言可能不一样了）
+&quot; &lt;Leader&gt;cA 行尾注释
+let NERDSpaceDelims = 1                     &quot;在左注释符之后，右注释符之前留有空格
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; nerdtree 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 有目录村结构的文件浏览插件
+ 
+&quot; 常规模式下输入 F2 调用插件
+nmap &lt;F2&gt; :NERDTreeToggle&lt;CR&gt;
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; omnicppcomplete 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 用于C/C++代码补全，这种补全主要针对命名空间、类、结构、共同体等进行补全，详细
+&quot; 说明可以参考帮助或网络教程等
+&quot; 使用前先执行如下 ctags 命令（本配置中可以直接使用 ccvext 插件来执行以下命令）
+&quot; ctags -R --c++-kinds=+p --fields=+iaS --extra=+q
+&quot; 我使用上面的参数生成标签后，对函数使用跳转时会出现多个选择
+&quot; 所以我就将--c++-kinds=+p参数给去掉了，如果大侠有什么其它解决方法希望不要保留呀
+set completeopt=menu                        &quot;关闭预览窗口
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; powerline 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 状态栏插件，更好的状态栏效果
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; repeat 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 主要用&quot;.&quot;命令来重复上次插件使用的命令
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; snipMate 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 用于各种代码补全，这种补全是一种对代码中的词与代码块的缩写补全，详细用法可以参
+&quot; 考使用说明或网络教程等。不过有时候也会与 supertab 插件在补全时产生冲突，如果大
+&quot; 侠有什么其它解决方法希望不要保留呀
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; SrcExpl 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 增强源代码浏览，其功能就像Windows中的&quot;Source Insight&quot;
+nmap &lt;F3&gt; :SrcExplToggle&lt;CR&gt;                &quot;打开/闭浏览窗口
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; std_c 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 用于增强C语法高亮
+ 
+&quot; 启用 // 注视风格
+let c_cpp_comments = 0
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; surround 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 快速给单词/句子两边增加符号（包括html标签），缺点是不能用&quot;.&quot;来重复命令
+&quot; 不过 repeat 插件可以解决这个问题，详细帮助见 :h surround.txt
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; Syntastic 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 用于保存文件时查检语法
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; Tagbar 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 相对 TagList 能更好的支持面向对象
+ 
+&quot; 常规模式下输入 tb 调用插件，如果有打开 TagList 窗口则先将其关闭
+nmap tb :TlistClose&lt;CR&gt;:TagbarToggle&lt;CR&gt;
+ 
+let g:tagbar_width=30                       &quot;设置窗口宽度
+&quot; let g:tagbar_left=1                         &quot;在左侧窗口中显示
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; TagList 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 高效地浏览源码, 其功能就像vc中的workpace
+&quot; 那里面列出了当前文件中的所有宏,全局变量, 函数名等
+ 
+&quot; 常规模式下输入 tl 调用插件，如果有打开 Tagbar 窗口则先将其关闭
+nmap tl :TagbarClose&lt;CR&gt;:Tlist&lt;CR&gt;
+ 
+let Tlist_Show_One_File=1                   &quot;只显示当前文件的tags
+&quot; let Tlist_Enable_Fold_Column=0              &quot;使taglist插件不显示左边的折叠行
+let Tlist_Exit_OnlyWindow=1                 &quot;如果Taglist窗口是最后一个窗口则退出Vim
+let Tlist_File_Fold_Auto_Close=1            &quot;自动折叠
+let Tlist_WinWidth=30                       &quot;设置窗口宽度
+let Tlist_Use_Right_Window=1                &quot;在右侧窗口中显示
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; txtbrowser 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 用于文本文件生成标签与与语法高亮（调用TagList插件生成标签，如果可以）
+au BufRead,BufNewFile *.txt setlocal ft=txt
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; ZoomWin 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 用于分割窗口的最大化与还原
+&quot; 常规模式下按快捷键 &lt;c-w&gt;o 在最大化与还原间切换
+ 
+&quot; =============================================================================
+&quot;                          &lt;&lt; 以下为常用工具配置 &gt;&gt;
+&quot; =============================================================================
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; cscope 工具配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 用Cscope自己的话说 - &quot;你可以把它当做是超过频的ctags&quot;
+if has(&quot;cscope&quot;)
+    &quot;设定可以使用 quickfix 窗口来查看 cscope 结果
+    set cscopequickfix=s-,c-,d-,i-,t-,e-
+    &quot;使支持用 Ctrl+]  和 Ctrl+t 快捷键在代码间跳转
+    set cscopetag
+    &quot;如果你想反向搜索顺序设置为1
+    set csto=0
+    &quot;在当前目录中添加任何数据库
+    if filereadable(&quot;cscope.out&quot;)
+        cs add cscope.out
+    &quot;否则添加数据库环境中所指出的
+    elseif $CSCOPE_DB != &quot;&quot;
+        cs add $CSCOPE_DB
+    endif
+    set cscopeverbose
+    &quot;快捷键设置
+    nmap &lt;C-\&gt;s :cs find s &lt;C-R&gt;=expand(&quot;&lt;cword&gt;&quot;)&lt;CR&gt;&lt;CR&gt;
+    nmap &lt;C-\&gt;g :cs find g &lt;C-R&gt;=expand(&quot;&lt;cword&gt;&quot;)&lt;CR&gt;&lt;CR&gt;
+    nmap &lt;C-\&gt;c :cs find c &lt;C-R&gt;=expand(&quot;&lt;cword&gt;&quot;)&lt;CR&gt;&lt;CR&gt;
+    nmap &lt;C-\&gt;t :cs find t &lt;C-R&gt;=expand(&quot;&lt;cword&gt;&quot;)&lt;CR&gt;&lt;CR&gt;
+    nmap &lt;C-\&gt;e :cs find e &lt;C-R&gt;=expand(&quot;&lt;cword&gt;&quot;)&lt;CR&gt;&lt;CR&gt;
+    nmap &lt;C-\&gt;f :cs find f &lt;C-R&gt;=expand(&quot;&lt;cfile&gt;&quot;)&lt;CR&gt;&lt;CR&gt;
+    nmap &lt;C-\&gt;i :cs find i ^&lt;C-R&gt;=expand(&quot;&lt;cfile&gt;&quot;)&lt;CR&gt;$&lt;CR&gt;
+    nmap &lt;C-\&gt;d :cs find d &lt;C-R&gt;=expand(&quot;&lt;cword&gt;&quot;)&lt;CR&gt;&lt;CR&gt;
+endif
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; ctags 工具配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 对浏览代码非常的方便,可以在函数,变量之间跳转等
+set tags=./tags;                            &quot;向上级目录递归查找tags文件（好像只有在Windows下才有用）
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; gvimfullscreen 工具配置 &gt; 请确保已安装了工具
+&quot; -----------------------------------------------------------------------------
+&quot; 用于 Windows Gvim 全屏窗口，可用 F11 切换
+&quot; 全屏后再隐藏菜单栏、工具栏、滚动条效果更好
+if (g:iswindows &amp;&amp; g:isGUI)
+    nmap &lt;F11&gt; &lt;Esc&gt;:call libcallnr(&quot;gvimfullscreen.dll&quot;, &quot;ToggleFullScreen&quot;, 0)&lt;CR&gt;
+endif
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; vimtweak 工具配置 &gt; 请确保以已装了工具
+&quot; -----------------------------------------------------------------------------
+&quot; 这里只用于窗口透明与置顶
+&quot; 常规模式下 Ctrl + Up（上方向键） 增加不透明度，Ctrl + Down（下方向键） 减少不透明度，&lt;Leader&gt;t 窗口置顶与否切换
+if (g:iswindows &amp;&amp; g:isGUI)
+    let g:Current_Alpha = 255
+    let g:Top_Most = 0
+    func! Alpha_add()
+        let g:Current_Alpha = g:Current_Alpha + 10
+        if g:Current_Alpha &gt; 255
+            let g:Current_Alpha = 255
+        endif
+        call libcallnr(&quot;vimtweak.dll&quot;,&quot;SetAlpha&quot;,g:Current_Alpha)
+    endfunc
+    func! Alpha_sub()
+        let g:Current_Alpha = g:Current_Alpha - 10
+        if g:Current_Alpha &lt; 155
+            let g:Current_Alpha = 155
+        endif
+        call libcallnr(&quot;vimtweak.dll&quot;,&quot;SetAlpha&quot;,g:Current_Alpha)
+    endfunc
+    func! Top_window()
+        if  g:Top_Most == 0
+            call libcallnr(&quot;vimtweak.dll&quot;,&quot;EnableTopMost&quot;,1)
+            let g:Top_Most = 1
+        else
+            call libcallnr(&quot;vimtweak.dll&quot;,&quot;EnableTopMost&quot;,0)
+            let g:Top_Most = 0
+        endif
+    endfunc
+ 
+    &quot;快捷键设置
+    nmap &lt;c-up&gt; :call Alpha_add()&lt;CR&gt;
+    nmap &lt;c-down&gt; :call Alpha_sub()&lt;CR&gt;
+    nmap &lt;leader&gt;t :call Top_window()&lt;CR&gt;
+endif
+ 
+&quot; =============================================================================
+&quot;                          &lt;&lt; 以下为常用自动命令配置 &gt;&gt;
+&quot; =============================================================================
+ 
+&quot; 自动切换目录为当前编辑文件所在目录
+au BufRead,BufNewFile,BufEnter * cd %:p:h
+ 
+&quot; =============================================================================
+&quot;                     &lt;&lt; windows 下解决 Quickfix 乱码问题 &gt;&gt;
+&quot; =============================================================================
+&quot; windows 默认编码为 cp936，而 Gvim(Vim) 内部编码为 utf-8，所以常常输出为乱码
+&quot; 以下代码可以将编码为 cp936 的输出信息转换为 utf-8 编码，以解决输出乱码问题
+&quot; 但好像只对输出信息全部为中文才有满意的效果，如果输出信息是中英混合的，那可能
+&quot; 不成功，会造成其中一种语言乱码，输出信息全部为英文的好像不会乱码
+&quot; 如果输出信息为乱码的可以试一下下面的代码，如果不行就还是给它注释掉
+ 
+&quot; if g:iswindows
+&quot;     function QfMakeConv()
+&quot;         let qflist = getqflist()
+&quot;         for i in qflist
+&quot;            let i.text = iconv(i.text, &quot;cp936&quot;, &quot;utf-8&quot;)
+&quot;         endfor
+&quot;         call setqflist(qflist)
+&quot;      endfunction
+&quot;      au QuickfixCmdPost make call QfMakeConv()
+&quot; endif
+ 
+&quot; =============================================================================
+&quot;                          &lt;&lt; 其它 &gt;&gt;
+&quot; =============================================================================
+&quot; 注：上面配置中的&quot;&lt;Leader&gt;&quot;在本软件中设置为&quot;\&quot;键（引号里的反斜杠），如&lt;Leader&gt;t
+&quot; 指在常规模式下按&quot;\&quot;键加&quot;t&quot;键，这里不是同时按，而是先按&quot;\&quot;键后按&quot;t&quot;键，间隔在一
+&quot; 秒内，而&lt;Leader&gt;cs是先按&quot;\&quot;键再按&quot;c&quot;又再按&quot;s&quot;键；如要修改&quot;&lt;leader&gt;&quot;键，可以把
+&quot; 下面的设置取消注释，并修改双引号中的键为你想要的，如修改为逗号键。
+ 
+&quot; let mapleader = &quot;,&quot;
+</code></pre>
+
+
+			
+			
+		</div>
+
+	</article>
+ 
+	<article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
+		<div class="meta">
+			<div class="date">
 				<time datetime="2015-08-03T18:17:32+08:00" itemprop="datePublished">2015/8/3</time>
 			</div>
 			<div class="tags">posted in 

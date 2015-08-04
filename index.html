@@ -143,9 +143,9 @@
 			
 			<pre><code class="language-bash">#!/usr/bin/expect -f
 
-set password veradm
-set user veradm
-set host 192.168.0.78
+set password password
+set user user
+set host XXX.XXX.XXX.XXX
 
 
 spawn ssh $user@$host 
@@ -214,424 +214,979 @@ interact
 	<article class="post" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting">
 		<div class="meta">
 			<div class="date">
-				<time datetime="2015-08-04T16:12:50+08:00" itemprop="datePublished">2015/8/4</time>
+				<time datetime="2015-08-04T14:42:29+08:00" itemprop="datePublished">2015/8/4</time>
 			</div>
 			<div class="tags">posted in 
 			
-			    <a class='category' href='Regex.html'>Regex</a>&nbsp;
+			    <a class='category' href='Vim.html'>Vim</a>&nbsp;
 			 
 			</div>
 		</div>
-		<h1 class="title" itemprop="name"><a href="14386759705705.html" itemprop="url">
-		30分钟入门正则表达式</a></h1>
+		<h1 class="title" itemprop="name"><a href="14386705490083.html" itemprop="url">
+		VIM 配置</a></h1>
 		<div class="entry-content" itemprop="articleBody">
 			
-			<h2 id="toc_0">本文目标</h2>
-
-<p>30分钟内让你明白正则表达式是什么，并对它有一些基本的了解，让你可以在自己的程序或网页里使用它。</p>
-
-<h2 id="toc_1">如何使用本教程</h2>
-
-<p>别被下面那些复杂的表达式吓倒，只要跟着我一步一步来，你会发现正则表达式其实并没有想像中的那么困难。当然，如果你看完了这篇教程之后，发现自己明白了很多，却又几乎什么都记不得，那也是很正常的——我认为，没接触过正则表达式的人在看完这篇教程后，能把提到过的语法记住80%以上的可能性为零。这里只是让你明白基本的原理，以后你还需要多练习，多使用，才能熟练掌握正则表达式。<br/>
-除了作为入门教程之外，本文还试图成为可以在日常工作中使用的正则表达式语法参考手册。就作者本人的经历来说，这个目标还是完成得不错的——你看，我自己也没能把所有的东西记下来，不是吗？</p>
-
-<blockquote>
-<p>文本格式约定：专业术语 元字符/语法格式 正则表达式 正则表达式中的一部分(用于分析) 对其进行匹配的源字符串 对正则表达式或其中一部分的说明<br/>
-本文右边有一些注释，主要是用来提供一些相关信息，或者给没有程序员背景的读者解释一些基本概念，通常可以忽略。</p>
-
-<p><em>最重要的是——请给我30分钟，如果你没有使用正则表达式的经验，请不要试图在30秒内入门——除非你是超人 :)</em></p>
-</blockquote>
-
-<h2 id="toc_2">正则表达式到底是什么东西？</h2>
-
-<p>字符是计算机软件处理文字时最基本的单位，可能是字母，数字，标点符号，空格，换行符，汉字等等。字符串是0个或更多个字符的序列。文本也就是文字，字符串。说某个字符串匹配某个正则表达式，通常是指这个字符串里有一部分（或几部分分别）能满足表达式给出的条件。<br/>
-在编写处理字符串的程序或网页时，经常会有查找符合某些复杂规则的字符串的需要。正则表达式就是用于描述这些规则的工具。换句话说，正则表达式就是记录文本规则的代码。<br/>
-很可能你使用过Windows/Dos下用于文件查找的通配符(wildcard)，也就是*和?。如果你想查找某个目录下的所有的Word文档的话，你会搜索*.doc。在这里，*会被解释成任意的字符串。和通配符类似，正则表达式也是用来进行文本匹配的工具，只不过比起通配符，它能更精确地描述你的需求——当然，代价就是更复杂——比如你可以编写一个正则表达式，用来查找所有以0开头，后面跟着2-3个数字，然后是一个连字号“-”，最后是7或8位数字的字符串(像010-12345678或0376-7654321)。</p>
-
-<h2 id="toc_3">入门</h2>
-
-<p>学习正则表达式的最好方法是从例子开始，理解例子之后再自己对例子进行修改，实验。下面给出了不少简单的例子，并对它们作了详细的说明。<br/>
-假设你在一篇英文小说里查找hi，你可以使用正则表达式hi。<br/>
-这几乎是最简单的正则表达式了，它可以精确匹配这样的字符串：由两个字符组成，前一个字符是h,后一个是i。通常，处理正则表达式的工具会提供一个忽略大小写的选项，如果选中了这个选项，它可以匹配hi,HI,Hi,hI这四种情况中的任意一种。<br/>
-不幸的是，很多单词里包含hi这两个连续的字符，比如him,history,high等等。用hi来查找的话，这里边的hi也会被找出来。如果要精确地查找hi这个单词的话，我们应该使用\bhi\b。<br/>
-<code>\b</code>是正则表达式规定的一个特殊代码（好吧，某些人叫它元字符，metacharacter），代表着单词的开头或结尾，也就是单词的分界处。虽然通常英文的单词是由空格，标点符号或者换行来分隔的，但是\b并不匹配这些单词分隔字符中的任何一个，它只匹配一个位置。<br/>
-如果需要更精确的说法，\b匹配这样的位置：它的前一个字符和后一个字符不全是(一个是,一个不是或不存在)\w。<br/>
-假如你要找的是hi后面不远处跟着一个Lucy，你应该用\bhi\b.*\bLucy\b。<br/>
-这里，.是另一个元字符，匹配除了换行符以外的任意字符。*同样是元字符，不过它代表的不是字符，也不是位置，而是数量——它指定*前边的内容可以连续重复使用任意次以使整个表达式得到匹配。因此，.*连在一起就意味着任意数量的不包含换行的字符。现在\bhi\b.*\bLucy\b的意思就很明显了：先是一个单词hi,然后是任意个任意字符(但不能是换行)，最后是Lucy这个单词。<br/>
-换行符就是&#39;\n&#39;,ASCII编码为10(十六进制0x0A)的字符。<br/>
-如果同时使用其它元字符，我们就能构造出功能更强大的正则表达式。比如下面这个例子：<br/>
-<code>0\d\d-\d\d\d\d\d\d\d\d</code>匹配这样的字符串：以0开头，然后是两个数字，然后是一个连字号“-”，最后是8个数字(也就是中国的电话号码。当然，这个例子只能匹配区号为3位的情形)。<br/>
-这里的\d是个新的元字符，匹配一位数字(0，或1，或2，或……)。-不是元字符，只匹配它本身——连字符(或者减号，或者中横线，或者随你怎么称呼它)。<br/>
-为了避免那么多烦人的重复，我们也可以这样写这个表达式：0\d{2}-\d{8}。这里\d后面的{2}({8})的意思是前面\d必须连续重复匹配2次(8次)。</p>
-
-<h2 id="toc_4">测试正则表达式</h2>
-
-<p>其它可用的测试工具:<br/>
-RegexBuddy<br/>
-Javascript正则表达式在线测试工具<br/>
-如果你不觉得正则表达式很难读写的话，要么你是一个天才，要么，你不是地球人。正则表达式的语法很令人头疼，即使对经常使用它的人来说也是如此。由于难于读写，容易出错，所以找一种工具对正则表达式进行测试是很有必要的。<br/>
-不同的环境下正则表达式的一些细节是不相同的，本教程介绍的是微软 .Net Framework 4.0 下正则表达式的行为，所以，我向你推荐我编写的.Net下的工具 正则表达式测试器。请参考该页面的说明来安装和运行该软件。<br/>
-下面是Regex Tester运行时的截图：<br/>
-正则表达式测试器运行截图</p>
-
-<h2 id="toc_5">元字符</h2>
-
-<p>现在你已经知道几个很有用的元字符了，如\b,.,<em>，还有\d.正则表达式里还有更多的元字符，比如\s匹配任意的空白符，包括空格，制表符(Tab)，换行符，中文全角空格等。\w匹配字母或数字或下划线或汉字等。<br/>
-对中文/汉字的特殊处理是由.Net提供的正则表达式引擎支持的，其它环境下的具体情况请查看相关文档。<br/>
-下面来看看更多的例子：<br/>
-\ba\w</em>\b匹配以字母a开头的单词——先是某个单词开始处(\b)，然后是字母a,然后是任意数量的字母或数字(\w<em>)，最后是单词结束处(\b)。<br/>
-好吧，现在我们说说正则表达式里的单词是什么意思吧：就是不少于一个的连续的\w。不错，这与学习英文时要背的成千上万个同名的东西的确关系不大 :)<br/>
-\d+匹配1个或更多连续的数字。这里的+是和</em>类似的元字符，不同的是*匹配重复任意次(可能是0次)，而+则匹配重复1次或更多次。<br/>
-\b\w{6}\b 匹配刚好6个字符的单词。<br/>
-表1.常用的元字符<br/>
-代码  说明<br/>
-.   匹配除换行符以外的任意字符<br/>
-\w  匹配字母或数字或下划线或汉字<br/>
-\s  匹配任意的空白符<br/>
-\d  匹配数字<br/>
-\b  匹配单词的开始或结束<br/>
-^   匹配字符串的开始<br/>
-\(   匹配字符串的结束正则表达式引擎通常会提供一个“测试指定的字符串是否匹配一个正则表达式”的方法，如JavaScript里的RegExp.test()方法或.NET里的Regex.IsMatch()方法。这里的匹配是指是字符串里有没有符合表达式规则的部分。如果不使用^和\)的话，对于\d{5,12}而言，使用这样的方法就只能保证字符串里包含5到12连续位数字，而不是整个字符串就是5到12位数字。<br/>
-元字符<sup>（和数字6在同一个键位上的符号）和\(都匹配一个位置，这和\b有点类似。^匹配你要用来查找的字符串的开头，\)匹配结尾。这两个代码在验证输入的内容时非常有用，比如一个网站如果要求你填写的QQ号必须为5位到12位数字时，可以使用：<sup>\d{5,12}$。</sup></sup><br/>
-这里的{5,12}和前面介绍过的{2}是类似的，只不过{2}匹配只能不多不少重复2次，{5,12}则是重复的次数不能少于5次，不能多于12次，否则都不匹配。<br/>
-因为使用了<sup>和$，所以输入的整个字符串都要用来和\d{5,12}来匹配，也就是说整个输入必须是5到12个数字，因此如果输入的QQ号能匹配这个正则表达式的话，那就符合要求了。</sup><br/>
-和忽略大小写的选项类似，有些正则表达式处理工具还有一个处理多行的选项。如果选中了这个选项，<sup>和$的意义就变成了匹配行的开始处和结束处。</sup></p>
-
-<h2 id="toc_6">字符转义</h2>
-
-<p>如果你想查找元字符本身的话，比如你查找.,或者*,就出现了问题：你没办法指定它们，因为它们会被解释成别的意思。这时你就得使用\来取消这些字符的特殊意义。因此，你应该使用.和*。当然，要查找\本身，你也得用\.<br/>
-例如：deerchao.net匹配deerchao.net，C:\Windows匹配C:\Windows。</p>
-
-<h2 id="toc_7">重复</h2>
-
-<p>你已经看过了前面的<em>,+,{2},{5,12}这几个匹配重复的方式了。下面是正则表达式中所有的限定符(指定数量的代码，例如</em>,{5,12}等)：<br/>
-表2.常用的限定符<br/>
-代码/语法   说明<br/>
-*   重复零次或更多次<br/>
-+   重复一次或更多次<br/>
-?   重复零次或一次<br/>
-{n} 重复n次<br/>
-{n,}    重复n次或更多次<br/>
-{n,m}   重复n到m次<br/>
-下面是一些使用重复的例子：<br/>
-Windows\d+匹配Windows后面跟1个或更多数字<br/>
-<sup>\w+匹配一行的第一个单词(或整个字符串的第一个单词，具体匹配哪个意思得看选项设置)</sup></p>
-
-<h2 id="toc_8">字符类</h2>
-
-<p>要想查找数字，字母或数字，空白是很简单的，因为已经有了对应这些字符集合的元字符，但是如果你想匹配没有预定义元字符的字符集合(比如元音字母a,e,i,o,u),应该怎么办？<br/>
-很简单，你只需要在方括号里列出它们就行了，像[aeiou]就匹配任何一个英文元音字母，[.?!]匹配标点符号(.或?或!)。<br/>
-我们也可以轻松地指定一个字符范围，像[0-9]代表的含意与\d就是完全一致的：一位数字；同理[a-z0-9A-Z_]也完全等同于\w（如果只考虑英文的话）。<br/>
-下面是一个更复杂的表达式：(?0\d{2}[) -]?\d{8}。<br/>
-“(”和“)”也是元字符，后面的分组节里会提到，所以在这里需要使用转义。<br/>
-这个表达式可以匹配几种格式的电话号码，像(010)88886666，或022-22334455，或02912345678等。我们对它进行一些分析吧：首先是一个转义字符(,它能出现0次或1次(?),然后是一个0，后面跟着2个数字(\d{2})，然后是)或-或空格中的一个，它出现1次或不出现(?)，最后是8个数字(\d{8})。</p>
-
-<h2 id="toc_9">分枝条件</h2>
-
-<p>不幸的是，刚才那个表达式也能匹配010)12345678或(022-87654321这样的“不正确”的格式。要解决这个问题，我们需要用到分枝条件。正则表达式里的分枝条件指的是有几种规则，如果满足其中任意一种规则都应该当成匹配，具体方法是用|把不同的规则分隔开。听不明白？没关系，看例子：<br/>
-0\d{2}-\d{8}|0\d{3}-\d{7}这个表达式能匹配两种以连字号分隔的电话号码：一种是三位区号，8位本地号(如010-12345678)，一种是4位区号，7位本地号(0376-2233445)。<br/>
-(?0\d{2})?[- ]?\d{8}|0\d{2}[- ]?\d{8}这个表达式匹配3位区号的电话号码，其中区号可以用小括号括起来，也可以不用，区号与本地号间可以用连字号或空格间隔，也可以没有间隔。你可以试试用分枝条件把这个表达式扩展成也支持4位区号的。<br/>
-\d{5}-\d{4}|\d{5}这个表达式用于匹配美国的邮政编码。美国邮编的规则是5位数字，或者用连字号间隔的9位数字。之所以要给出这个例子是因为它能说明一个问题：使用分枝条件时，要注意各个条件的顺序。如果你把它改成\d{5}|\d{5}-\d{4}的话，那么就只会匹配5位的邮编(以及9位邮编的前5位)。原因是匹配分枝条件时，将会从左到右地测试每个条件，如果满足了某个分枝的话，就不会去再管其它的条件了。</p>
-
-<h2 id="toc_10">分组</h2>
-
-<p>我们已经提到了怎么重复单个字符（直接在字符后面加上限定符就行了）；但如果想要重复多个字符又该怎么办？你可以用小括号来指定子表达式(也叫做分组)，然后你就可以指定这个子表达式的重复次数了，你也可以对子表达式进行其它一些操作(后面会有介绍)。<br/>
-(\d{1,3}.){3}\d{1,3}是一个简单的IP地址匹配表达式。要理解这个表达式，请按下列顺序分析它：\d{1,3}匹配1到3位的数字，(\d{1,3}.){3}匹配三位数字加上一个英文句号(这个整体也就是这个分组)重复3次，最后再加上一个一到三位的数字(\d{1,3})。<br/>
-IP地址中每个数字都不能大于255. 经常有人问我, 01.02.03.04 这样前面带有0的数字, 是不是正确的IP地址呢? 答案是: 是的, IP 地址里的数字可以包含有前导 0 (leading zeroes).<br/>
-不幸的是，它也将匹配256.300.888.999这种不可能存在的IP地址。如果能使用算术比较的话，或许能简单地解决这个问题，但是正则表达式中并不提供关于数学的任何功能，所以只能使用冗长的分组，选择，字符类来描述一个正确的IP地址：((2[0-4]\d|25[0-5]|[01]?\d\d?).){3}(2[0-4]\d|25[0-5]|[01]?\d\d?)。<br/>
-理解这个表达式的关键是理解2[0-4]\d|25[0-5]|[01]?\d\d?，这里我就不细说了，你自己应该能分析得出来它的意义。</p>
-
-<h2 id="toc_11">反义</h2>
-
-<p>有时需要查找不属于某个能简单定义的字符类的字符。比如想查找除了数字以外，其它任意字符都行的情况，这时需要用到反义：<br/>
-表3.常用的反义代码<br/>
-代码/语法   说明<br/>
-\W  匹配任意不是字母，数字，下划线，汉字的字符<br/>
-\S  匹配任意不是空白符的字符<br/>
-\D  匹配任意非数字的字符<br/>
-\B  匹配不是单词开头或结束的位置<br/>
-[<sup>x]</sup>    匹配除了x以外的任意字符<br/>
-[<sup>aeiou]</sup>    匹配除了aeiou这几个字母以外的任意字符<br/>
-例子：\S+匹配不包含空白符的字符串。<br/>
-<a[^>]+&gt;匹配用尖括号括起来的以a开头的字符串。</p>
-
-<h2 id="toc_12">后向引用</h2>
-
-<p>使用小括号指定一个子表达式后，匹配这个子表达式的文本(也就是此分组捕获的内容)可以在表达式或其它程序中作进一步的处理。默认情况下，每个分组会自动拥有一个组号，规则是：从左向右，以分组的左括号为标志，第一个出现的分组的组号为1，第二个为2，以此类推。<br/>
-呃……其实,组号分配还不像我刚说得那么简单：<br/>
-分组0对应整个正则表达式<br/>
-实际上组号分配过程是要从左向右扫描两遍的：第一遍只给未命名组分配，第二遍只给命名组分配－－因此所有命名组的组号都大于未命名的组号<br/>
-你可以使用(?:exp)这样的语法来剥夺一个分组对组号分配的参与权．<br/>
-后向引用用于重复搜索前面某个分组匹配的文本。例如，\1代表分组1匹配的文本。难以理解？请看示例：<br/>
-\b(\w+)\b\s+\1\b可以用来匹配重复的单词，像go go, 或者kitty kitty。这个表达式首先是一个单词，也就是单词开始处和结束处之间的多于一个的字母或数字(\b(\w+)\b)，这个单词会被捕获到编号为1的分组中，然后是1个或几个空白符(\s+)，最后是分组1中捕获的内容（也就是前面匹配的那个单词）(\1)。<br/>
-你也可以自己指定子表达式的组名。要指定一个子表达式的组名，请使用这样的语法：(?<Word>\w+)(或者把尖括号换成&#39;也行：(?&#39;Word&#39;\w+)),这样就把\w+的组名指定为Word了。要反向引用这个分组捕获的内容，你可以使用\k<Word>,所以上一个例子也可以写成这样：\b(?<Word>\w+)\b\s+\k<Word>\b。<br/>
-使用小括号的时候，还有很多特定用途的语法。下面列出了最常用的一些：<br/>
-表4.常用分组语法<br/>
-分类  代码/语法   说明<br/>
-捕获  (exp)   匹配exp,并捕获文本到自动命名的组里<br/>
-(?<name>exp)    匹配exp,并捕获文本到名称为name的组里，也可以写成(?&#39;name&#39;exp)<br/>
-(?:exp) 匹配exp,不捕获匹配的文本，也不给此分组分配组号<br/>
-零宽断言    (?=exp) 匹配exp前面的位置<br/>
-(?&lt;=exp)    匹配exp后面的位置<br/>
-(?!exp) 匹配后面跟的不是exp的位置<br/>
-(?&lt;!exp)    匹配前面不是exp的位置<br/>
-注释  (?#comment) 这种类型的分组不对正则表达式的处理产生任何影响，用于提供注释让人阅读<br/>
-我们已经讨论了前两种语法。第三个(?:exp)不会改变正则表达式的处理方式，只是这样的组匹配的内容不会像前两种那样被捕获到某个组里面，也不会拥有组号。“我为什么会想要这样做？”——好问题，你觉得为什么呢？</p>
-
-<h2 id="toc_13">零宽断言</h2>
-
-<p>地球人，是不是觉得这些术语名称太复杂，太难记了？我也有同感。知道有这么一种东西就行了，它叫什么，随它去吧！人若无名，便可专心练剑；物若无名，便可随意取舍……<br/>
-接下来的四个用于查找在某些内容(但并不包括这些内容)之前或之后的东西，也就是说它们像\b,<sup>,$那样用于指定一个位置，这个位置应该满足一定的条件(即断言)，因此它们也被称为零宽断言。最好还是拿例子来说明吧：</sup><br/>
-断言用来声明一个应该为真的事实。正则表达式中只有当断言为真时才会继续进行匹配。<br/>
-(?=exp)也叫零宽度正预测先行断言，它断言自身出现的位置的后面能匹配表达式exp。比如\b\w+(?=ing\b)，匹配以ing结尾的单词的前面部分(除了ing以外的部分)，如查找I&#39;m singing while you&#39;re dancing.时，它会匹配sing和danc。<br/>
-(?&lt;=exp)也叫零宽度正回顾后发断言，它断言自身出现的位置的前面能匹配表达式exp。比如(?&lt;=\bre)\w+\b会匹配以re开头的单词的后半部分(除了re以外的部分)，例如在查找reading a book时，它匹配ading。<br/>
-假如你想要给一个很长的数字中每三位间加一个逗号(当然是从右边加起了)，你可以这样查找需要在前面和里面添加逗号的部分：((?&lt;=\d)\d{3})+\b，用它对1234567890进行查找时结果是234567890。<br/>
-下面这个例子同时使用了这两种断言：(?&lt;=\s)\d+(?=\s)匹配以空白符间隔的数字(再次强调，不包括这些空白符)。</p>
-
-<h2 id="toc_14">负向零宽断言</h2>
-
-<p>前面我们提到过怎么查找不是某个字符或不在某个字符类里的字符的方法(反义)。但是如果我们只是想要确保某个字符没有出现，但并不想去匹配它时怎么办？例如，如果我们想查找这样的单词--它里面出现了字母q,但是q后面跟的不是字母u,我们可以尝试这样：<br/>
-\b\w<em>q[<sup>u]\w</sup></em>\b匹配包含后面不是字母u的字母q的单词。但是如果多做测试(或者你思维足够敏锐，直接就观察出来了)，你会发现，如果q出现在单词的结尾的话，像Iraq,Benq，这个表达式就会出错。这是因为[<sup>u]总要匹配一个字符，所以如果q是单词的最后一个字符的话，后面的[<sup>u]将会匹配q后面的单词分隔符(可能是空格，或者是句号或其它的什么)，后面的\w<em>\b将会匹配下一个单词，于是\b\w</em>q[<sup>u]\w*\b就能匹配整个Iraq</sup></sup></sup> fighting。负向零宽断言能解决这样的问题，因为它只匹配一个位置，并不消费任何字符。现在，我们可以这样来解决这个问题：\b\w<em>q(?!u)\w</em>\b。<br/>
-零宽度负预测先行断言(?!exp)，断言此位置的后面不能匹配表达式exp。例如：\d{3}(?!\d)匹配三位数字，而且这三位数字的后面不能是数字；\b((?!abc)\w)+\b匹配不包含连续字符串abc的单词。<br/>
-同理，我们可以用(?&lt;!exp),零宽度负回顾后发断言来断言此位置的前面不能匹配表达式exp：(?&lt;![a-z])\d{7}匹配前面不是小写字母的七位数字。<br/>
-请详细分析表达式(?&lt;=&lt;(\w+)&gt;).<em>(?=&lt;\/\1&gt;)，这个表达式最能表现零宽断言的真正用途。<br/>
-一个更复杂的例子：(?&lt;=&lt;(\w+)&gt;).</em>(?=&lt;\/\1&gt;)匹配不包含属性的简单HTML标签内里的内容。(?&lt;=&lt;(\w+)&gt;)指定了这样的前缀：被尖括号括起来的单词(比如可能是<b>)，然后是.*(任意的字符串),最后是一个后缀(?=&lt;\/\1&gt;)。注意后缀里的\/，它用到了前面提过的字符转义；\1则是一个反向引用，引用的正是捕获的第一组，前面的(\w+)匹配的内容，这样如果前缀实际上是<b>的话，后缀就是</b>了。整个表达式匹配的是<b>和</b>之间的内容(再次提醒，不包括前缀和后缀本身)。</p>
-
-<h2 id="toc_15">注释</h2>
-
-<p>小括号的另一种用途是通过语法(?#comment)来包含注释。例如：2[0-4]\d(?#200-249)|25<a href="?#250-255">0-5</a>|[01]?\d\d?(?#0-199)。<br/>
-要包含注释的话，最好是启用“忽略模式里的空白符”选项，这样在编写表达式时能任意的添加空格，Tab，换行，而实际使用时这些都将被忽略。启用这个选项后，在#后面到这一行结束的所有文本都将被当成注释忽略掉。例如，我们可以前面的一个表达式写成这样：<br/>
-      (?&lt;=    # 断言要匹配的文本的前缀<br/>
-      &lt;(\w+)&gt; # 查找尖括号括起来的字母或数字(即HTML/XML标签)<br/>
-      )       # 前缀结束<br/>
-      .*      # 匹配任意文本<br/>
-      (?=     # 断言要匹配的文本的后缀<br/>
-      &lt;\/\1&gt;  # 查找尖括号括起来的内容：前面是一个<q>/</q>，后面是先前捕获的标签<br/>
-      )       # 后缀结束</p>
-
-<h2 id="toc_16">贪婪与懒惰</h2>
-
-<p>当正则表达式中包含能接受重复的限定符时，通常的行为是（在使整个表达式能得到匹配的前提下）匹配尽可能多的字符。以这个表达式为例：a.<em>b，它将会匹配最长的以a开始，以b结束的字符串。如果用它来搜索aabab的话，它会匹配整个字符串aabab。这被称为贪婪匹配。<br/>
-有时，我们更需要懒惰匹配，也就是匹配尽可能少的字符。前面给出的限定符都可以被转化为懒惰匹配模式，只要在它后面加上一个问号?。这样.</em>?就意味着匹配任意数量的重复，但是在能使整个匹配成功的前提下使用最少的重复。现在看看懒惰版的例子吧：<br/>
-a.*?b匹配最短的，以a开始，以b结束的字符串。如果把它应用于aabab的话，它会匹配aab（第一到第三个字符）和ab（第四到第五个字符）。<br/>
-为什么第一个匹配是aab（第一到第三个字符）而不是ab（第二到第三个字符）？简单地说，因为正则表达式有另一条规则，比懒惰／贪婪规则的优先级更高：最先开始的匹配拥有最高的优先权——The match that begins earliest wins。<br/>
-表5.懒惰限定符<br/>
-代码/语法   说明<br/>
-*?  重复任意次，但尽可能少重复<br/>
-+?  重复1次或更多次，但尽可能少重复<br/>
-??  重复0次或1次，但尽可能少重复<br/>
-{n,m}?  重复n到m次，但尽可能少重复<br/>
-{n,}?   重复n次以上，但尽可能少重复</p>
-
-<h2 id="toc_17">处理选项</h2>
-
-<p>在C#中，你可以使用Regex(String, RegexOptions)构造函数来设置正则表达式的处理选项。如：Regex regex = new Regex(@<q>\ba\w{6}\b</q>, RegexOptions.IgnoreCase);<br/>
-上面介绍了几个选项如忽略大小写，处理多行等，这些选项能用来改变处理正则表达式的方式。下面是.Net中常用的正则表达式选项：<br/>
-表6.常用的处理选项<br/>
-名称  说明<br/>
-IgnoreCase(忽略大小写)   匹配时不区分大小写。<br/>
-Multiline(多行模式) 更改<sup>和\(的含义，使它们分别在任意一行的行首和行尾匹配，而不仅仅在整个字符串的开头和结尾匹配。(在此模式下,\)的精确含意是:匹配\n之前的位置以及字符串结束前的位置.)</sup><br/>
-Singleline(单行模式)    更改.的含义，使它与每一个字符匹配（包括换行符\n）。<br/>
-IgnorePatternWhitespace(忽略空白)   忽略表达式中的非转义空白并启用由#标记的注释。<br/>
-ExplicitCapture(显式捕获)   仅捕获已被显式命名的组。<br/>
-一个经常被问到的问题是：是不是只能同时使用多行模式和单行模式中的一种？答案是：不是。这两个选项之间没有任何关系，除了它们的名字比较相似（以至于让人感到疑惑）以外。</p>
-
-<h2 id="toc_18">平衡组/递归匹配</h2>
-
-<p>这里介绍的平衡组语法是由.Net Framework支持的；其它语言／库不一定支持这种功能，或者支持此功能但需要使用不同的语法。<br/>
-有时我们需要匹配像( 100 * ( 50 + 15 ) )这样的可嵌套的层次性结构，这时简单地使用(.+)则只会匹配到最左边的左括号和最右边的右括号之间的内容(这里我们讨论的是贪婪模式，懒惰模式也有下面的问题)。假如原来的字符串里的左括号和右括号出现的次数不相等，比如( 5 / ( 3 + 2 ) ) )，那我们的匹配结果里两者的个数也不会相等。有没有办法在这样的字符串里匹配到最长的，配对的括号之间的内容呢？<br/>
-为了避免(和(把你的大脑彻底搞糊涂，我们还是用尖括号代替圆括号吧。现在我们的问题变成了如何把xx <aa <bbb> <bbb> aa&gt; yy这样的字符串里，最长的配对的尖括号内的内容捕获出来？<br/>
-这里需要用到以下的语法构造：<br/>
-(?&#39;group&#39;) 把捕获的内容命名为group,并压入堆栈(Stack)<br/>
-(?&#39;-group&#39;) 从堆栈上弹出最后压入堆栈的名为group的捕获内容，如果堆栈本来为空，则本分组的匹配失败<br/>
-(?(group)yes|no) 如果堆栈上存在以名为group的捕获内容的话，继续匹配yes部分的表达式，否则继续匹配no部分<br/>
-(?!) 零宽负向先行断言，由于没有后缀表达式，试图匹配总是失败<br/>
-如果你不是一个程序员（或者你自称程序员但是不知道堆栈是什么东西），你就这样理解上面的三种语法吧：第一个就是在黑板上写一个<q>group</q>，第二个就是从黑板上擦掉一个<q>group</q>，第三个就是看黑板上写的还有没有<q>group</q>，如果有就继续匹配yes部分，否则就匹配no部分。<br/>
-我们需要做的是每碰到了左括号，就在压入一个<q>Open</q>,每碰到一个右括号，就弹出一个，到了最后就看看堆栈是否为空－－如果不为空那就证明左括号比右括号多，那匹配就应该失败。正则表达式引擎会进行回溯(放弃最前面或最后面的一些字符)，尽量使整个表达式得到匹配。</p>
-
-<pre><code>&lt;                         #最外层的左括号
-    [^&lt;&gt;]*                #最外层的左括号后面的不是括号的内容
-    (
-        (
-            (?&#39;Open&#39;&lt;)    #碰到了左括号，在黑板上写一个&quot;Open&quot;
-            [^&lt;&gt;]*       #匹配左括号后面的不是括号的内容
-        )+
-        (
-            (?&#39;-Open&#39;&gt;)   #碰到了右括号，擦掉一个&quot;Open&quot;
-            [^&lt;&gt;]*        #匹配右括号后面不是括号的内容
-        )+
-    )*
-    (?(Open)(?!))         #在遇到最外层的右括号前面，判断黑板上还有没有没擦掉的&quot;Open&quot;；如果还有，则匹配失败
-
-&gt;                         #最外层的右括号
+			<pre><code>&quot; =============================================================================
+&quot;        &lt;&lt; 判断操作系统是 Windows 还是 Linux 和判断是终端还是 Gvim &gt;&gt;
+&quot; =============================================================================
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; 判断操作系统是否是 Windows 还是 Linux &gt;
+&quot; -----------------------------------------------------------------------------
+let g:iswindows = 0
+let g:islinux = 0
+if(has(&quot;win32&quot;) || has(&quot;win64&quot;) || has(&quot;win95&quot;) || has(&quot;win16&quot;))
+    let g:iswindows = 1
+else
+    let g:islinux = 1
+endif
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; 判断是终端还是 Gvim &gt;
+&quot; -----------------------------------------------------------------------------
+if has(&quot;gui_running&quot;)
+    let g:isGUI = 1
+else
+    let g:isGUI = 0
+endif
+ 
+ 
+&quot; =============================================================================
+&quot;                          &lt;&lt; 以下为软件默认配置 &gt;&gt;
+&quot; =============================================================================
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; Windows Gvim 默认配置&gt; 做了一点修改
+&quot; -----------------------------------------------------------------------------
+if (g:iswindows &amp;&amp; g:isGUI)
+    source $VIMRUNTIME/vimrc_example.vim
+    source $VIMRUNTIME/mswin.vim
+    behave mswin
+    set diffexpr=MyDiff()
+ 
+    function MyDiff()
+        let opt = &#39;-a --binary &#39;
+        if &amp;diffopt =~ &#39;icase&#39; | let opt = opt . &#39;-i &#39; | endif
+        if &amp;diffopt =~ &#39;iwhite&#39; | let opt = opt . &#39;-b &#39; | endif
+        let arg1 = v:fname_in
+        if arg1 =~ &#39; &#39; | let arg1 = &#39;&quot;&#39; . arg1 . &#39;&quot;&#39; | endif
+        let arg2 = v:fname_new
+        if arg2 =~ &#39; &#39; | let arg2 = &#39;&quot;&#39; . arg2 . &#39;&quot;&#39; | endif
+        let arg3 = v:fname_out
+        if arg3 =~ &#39; &#39; | let arg3 = &#39;&quot;&#39; . arg3 . &#39;&quot;&#39; | endif
+        let eq = &#39;&#39;
+        if $VIMRUNTIME =~ &#39; &#39;
+            if &amp;sh =~ &#39;\&lt;cmd&#39;
+                let cmd = &#39;&quot;&quot;&#39; . $VIMRUNTIME . &#39;\diff&quot;&#39;
+                let eq = &#39;&quot;&#39;
+            else
+                let cmd = substitute($VIMRUNTIME, &#39; &#39;, &#39;&quot; &#39;, &#39;&#39;) . &#39;\diff&quot;&#39;
+            endif
+        else
+            let cmd = $VIMRUNTIME . &#39;\diff&#39;
+        endif
+        silent execute &#39;!&#39; . cmd . &#39; &#39; . opt . arg1 . &#39; &#39; . arg2 . &#39; &gt; &#39; . arg3 . eq
+    endfunction
+endif
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; Linux Gvim/Vim 默认配置&gt; 做了一点修改
+&quot; -----------------------------------------------------------------------------
+if g:islinux
+    set hlsearch        &quot;高亮搜索
+    set incsearch       &quot;在输入要搜索的文字时，实时匹配
+ 
+    &quot; Uncomment the following to have Vim jump to the last position when
+    &quot; reopening a file
+    if has(&quot;autocmd&quot;)
+        au BufReadPost * if line(&quot;&#39;\&quot;&quot;) &gt; 1 &amp;&amp; line(&quot;&#39;\&quot;&quot;) &lt;= line(&quot;$&quot;) | exe &quot;normal! g&#39;\&quot;&quot; | endif
+    endif
+ 
+    if g:isGUI
+        &quot; Source a global configuration file if available
+        if filereadable(&quot;/etc/vim/gvimrc.local&quot;)
+            source /etc/vim/gvimrc.local
+        endif
+    else
+        &quot; This line should not be removed as it ensures that various options are
+        &quot; properly set to work with the Vim-related packages available in Debian.
+        runtime! debian.vim
+ 
+        &quot; Vim5 and later versions support syntax highlighting. Uncommenting the next
+        &quot; line enables syntax highlighting by default.
+        if has(&quot;syntax&quot;)
+            syntax on
+        endif
+ 
+        set mouse=a                    &quot; 在任何模式下启用鼠标
+        set t_Co=256                   &quot; 在终端启用256色
+        set backspace=2                &quot; 设置退格键可用
+ 
+        &quot; Source a global configuration file if available
+        if filereadable(&quot;/etc/vim/vimrc.local&quot;)
+            source /etc/vim/vimrc.local
+        endif
+    endif
+endif
+ 
+ 
+&quot; =============================================================================
+&quot;                          &lt;&lt; 以下为用户自定义配置 &gt;&gt;
+&quot; =============================================================================
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; Vundle 插件管理工具配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 用于更方便的管理vim插件，具体用法参考 :h vundle 帮助
+&quot; Vundle工具安装方法为在终端输入如下命令
+&quot; git clone https://github.com/gmarik/vundle.git ~/.vim/bundle/vundle
+&quot; 如果想在 windows 安装就必需先安装 &quot;git for window&quot;，可查阅网上资料
+ 
+set nocompatible                                      &quot;禁用 Vi 兼容模式
+filetype off                                          &quot;禁用文件类型侦测
+ 
+if g:islinux
+    set rtp+=~/.vim/bundle/vundle/
+    call vundle#rc()
+else
+    set rtp+=$VIM/vimfiles/bundle/vundle/
+    call vundle#rc(&#39;$VIM/vimfiles/bundle/&#39;)
+endif
+ 
+&quot; 使用Vundle来管理插件，这个必须要有。
+Bundle &#39;gmarik/vundle&#39;
+ 
+&quot; 以下为要安装或更新的插件，不同仓库都有（具体书写规范请参考帮助）
+Bundle &#39;a.vim&#39;
+Bundle &#39;Align&#39;
+Bundle &#39;jiangmiao/auto-pairs&#39;
+Bundle &#39;bufexplorer.zip&#39;
+Bundle &#39;ccvext.vim&#39;
+Bundle &#39;cSyntaxAfter&#39;
+Bundle &#39;ctrlpvim/ctrlp.vim&#39;
+Bundle &#39;mattn/emmet-vim&#39;
+Bundle &#39;Yggdroot/indentLine&#39;
+Bundle &#39;vim-javacompleteex&#39;
+Bundle &#39;Mark--Karkat&#39;
+Bundle &#39;Shougo/neocomplcache.vim&#39;
+Bundle &#39;scrooloose/nerdcommenter&#39;
+Bundle &#39;scrooloose/nerdtree&#39;
+Bundle &#39;OmniCppComplete&#39;
+Bundle &#39;Lokaltog/vim-powerline&#39;
+Bundle &#39;repeat.vim&#39;
+Bundle &#39;msanders/snipmate.vim&#39;
+Bundle &#39;wesleyche/SrcExpl&#39;
+Bundle &#39;std_c.zip&#39;
+Bundle &#39;tpope/vim-surround&#39;
+Bundle &#39;scrooloose/syntastic&#39;
+Bundle &#39;majutsushi/tagbar&#39;
+Bundle &#39;taglist.vim&#39;
+Bundle &#39;TxtBrowser&#39;
+Bundle &#39;ZoomWin&#39;
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; 编码配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 注：使用utf-8格式后，软件与程序源码、文件路径不能有中文，否则报错
+set encoding=utf-8                                    &quot;设置gvim内部编码，默认不更改
+set fileencoding=utf-8                                &quot;设置当前文件编码，可以更改，如：gbk（同cp936）
+set fileencodings=ucs-bom,utf-8,gbk,cp936,latin-1     &quot;设置支持打开的文件的编码
+ 
+&quot; 文件格式，默认 ffs=dos,unix
+set fileformat=unix                                   &quot;设置新（当前）文件的&lt;EOL&gt;格式，可以更改，如：dos（windows系统常用）
+set fileformats=unix,dos,mac                          &quot;给出文件的&lt;EOL&gt;格式类型
+ 
+if (g:iswindows &amp;&amp; g:isGUI)
+    &quot;解决菜单乱码
+    source $VIMRUNTIME/delmenu.vim
+    source $VIMRUNTIME/menu.vim
+ 
+    &quot;解决consle输出乱码
+    language messages zh_CN.utf-8
+endif
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; 编写文件时的配置 &gt;
+&quot; -----------------------------------------------------------------------------
+filetype on                                           &quot;启用文件类型侦测
+filetype plugin on                                    &quot;针对不同的文件类型加载对应的插件
+filetype plugin indent on                             &quot;启用缩进
+set smartindent                                       &quot;启用智能对齐方式
+set expandtab                                         &quot;将Tab键转换为空格
+set tabstop=4                                         &quot;设置Tab键的宽度，可以更改，如：宽度为2
+set shiftwidth=4                                      &quot;换行时自动缩进宽度，可更改（宽度同tabstop）
+set smarttab                                          &quot;指定按一次backspace就删除shiftwidth宽度
+set foldenable                                        &quot;启用折叠
+set foldmethod=indent                                 &quot;indent 折叠方式
+&quot; set foldmethod=marker                                &quot;marker 折叠方式
+ 
+&quot; 常规模式下用空格键来开关光标行所在折叠（注：zR 展开所有折叠，zM 关闭所有折叠）
+nnoremap &lt;space&gt; @=((foldclosed(line(&#39;.&#39;)) &lt; 0) ? &#39;zc&#39; : &#39;zo&#39;)&lt;CR&gt;
+ 
+&quot; 当文件在外部被修改，自动更新该文件
+set autoread
+ 
+&quot; 常规模式下输入 cS 清除行尾空格
+nmap cS :%s/\s\+$//g&lt;CR&gt;:noh&lt;CR&gt;
+ 
+&quot; 常规模式下输入 cM 清除行尾 ^M 符号
+nmap cM :%s/\r$//g&lt;CR&gt;:noh&lt;CR&gt;
+ 
+set ignorecase                                        &quot;搜索模式里忽略大小写
+set smartcase                                         &quot;如果搜索模式包含大写字符，不使用 &#39;ignorecase&#39; 选项，只有在输入搜索模式并且打开 &#39;ignorecase&#39; 选项时才会使用
+&quot; set noincsearch                                       &quot;在输入要搜索的文字时，取消实时匹配
+ 
+&quot; Ctrl + K 插入模式下光标向上移动
+imap &lt;c-k&gt; &lt;Up&gt;
+ 
+&quot; Ctrl + J 插入模式下光标向下移动
+imap &lt;c-j&gt; &lt;Down&gt;
+ 
+&quot; Ctrl + H 插入模式下光标向左移动
+imap &lt;c-h&gt; &lt;Left&gt;
+ 
+&quot; Ctrl + L 插入模式下光标向右移动
+imap &lt;c-l&gt; &lt;Right&gt;
+ 
+&quot; 启用每行超过80列的字符提示（字体变蓝并加下划线），不启用就注释掉
+au BufWinEnter * let w:m2=matchadd(&#39;Underlined&#39;, &#39;\%&gt;&#39; . 80 . &#39;v.\+&#39;, -1)
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; 界面配置 &gt;
+&quot; -----------------------------------------------------------------------------
+set number                                            &quot;显示行号
+set laststatus=2                                      &quot;启用状态栏信息
+set cmdheight=2                                       &quot;设置命令行的高度为2，默认为1
+set cursorline                                        &quot;突出显示当前行
+&quot; set guifont=YaHei_Consolas_Hybrid:h10                 &quot;设置字体:字号（字体名称空格用下划线代替）
+set nowrap                                            &quot;设置不自动换行
+set shortmess=atI                                     &quot;去掉欢迎界面
+ 
+&quot; 设置 gVim 窗口初始位置及大小
+if g:isGUI
+    &quot; au GUIEnter * simalt ~x                           &quot;窗口启动时自动最大化
+    winpos 100 10                                     &quot;指定窗口出现的位置，坐标原点在屏幕左上角
+    set lines=38 columns=120                          &quot;指定窗口大小，lines为高度，columns为宽度
+endif
+ 
+&quot; 设置代码配色方案
+if g:isGUI
+    colorscheme Tomorrow-Night-Eighties               &quot;Gvim配色方案
+else
+    colorscheme Tomorrow-Night-Eighties               &quot;终端配色方案
+endif
+ 
+&quot; 显示/隐藏菜单栏、工具栏、滚动条，可用 Ctrl + F11 切换
+if g:isGUI
+    set guioptions-=m
+    set guioptions-=T
+    set guioptions-=r
+    set guioptions-=L
+    nmap &lt;silent&gt; &lt;c-F11&gt; :if &amp;guioptions =~# &#39;m&#39; &lt;Bar&gt;
+        \set guioptions-=m &lt;Bar&gt;
+        \set guioptions-=T &lt;Bar&gt;
+        \set guioptions-=r &lt;Bar&gt;
+        \set guioptions-=L &lt;Bar&gt;
+    \else &lt;Bar&gt;
+        \set guioptions+=m &lt;Bar&gt;
+        \set guioptions+=T &lt;Bar&gt;
+        \set guioptions+=r &lt;Bar&gt;
+        \set guioptions+=L &lt;Bar&gt;
+    \endif&lt;CR&gt;
+endif
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; 编译、连接、运行配置 (目前只配置了C、C++、Java语言)&gt;
+&quot; -----------------------------------------------------------------------------
+&quot; F9 一键保存、编译、连接存并运行
+nmap &lt;F9&gt; :call Run()&lt;CR&gt;
+imap &lt;F9&gt; &lt;ESC&gt;:call Run()&lt;CR&gt;
+ 
+&quot; Ctrl + F9 一键保存并编译
+nmap &lt;c-F9&gt; :call Compile()&lt;CR&gt;
+imap &lt;c-F9&gt; &lt;ESC&gt;:call Compile()&lt;CR&gt;
+ 
+&quot; Ctrl + F10 一键保存并连接
+nmap &lt;c-F10&gt; :call Link()&lt;CR&gt;
+imap &lt;c-F10&gt; &lt;ESC&gt;:call Link()&lt;CR&gt;
+ 
+let s:LastShellReturn_C = 0
+let s:LastShellReturn_L = 0
+let s:ShowWarning = 1
+let s:Obj_Extension = &#39;.o&#39;
+let s:Exe_Extension = &#39;.exe&#39;
+let s:Class_Extension = &#39;.class&#39;
+let s:Sou_Error = 0
+ 
+let s:windows_CFlags = &#39;gcc\ -fexec-charset=gbk\ -Wall\ -g\ -O0\ -c\ %\ -o\ %&lt;.o&#39;
+let s:linux_CFlags = &#39;gcc\ -Wall\ -g\ -O0\ -c\ %\ -o\ %&lt;.o&#39;
+ 
+let s:windows_CPPFlags = &#39;g++\ -fexec-charset=gbk\ -Wall\ -g\ -O0\ -c\ %\ -o\ %&lt;.o&#39;
+let s:linux_CPPFlags = &#39;g++\ -Wall\ -g\ -O0\ -c\ %\ -o\ %&lt;.o&#39;
+ 
+let s:JavaFlags = &#39;javac\ %&#39;
+ 
+func! Compile()
+    exe &quot;:ccl&quot;
+    exe &quot;:update&quot;
+    let s:Sou_Error = 0
+    let s:LastShellReturn_C = 0
+    let Sou = expand(&quot;%:p&quot;)
+    let v:statusmsg = &#39;&#39;
+    if expand(&quot;%:e&quot;) == &quot;c&quot; || expand(&quot;%:e&quot;) == &quot;cpp&quot; || expand(&quot;%:e&quot;) == &quot;cxx&quot;
+        let Obj = expand(&quot;%:p:r&quot;).s:Obj_Extension
+        let Obj_Name = expand(&quot;%:p:t:r&quot;).s:Obj_Extension
+        if !filereadable(Obj) || (filereadable(Obj) &amp;&amp; (getftime(Obj) &lt; getftime(Sou)))
+            redraw!
+            if expand(&quot;%:e&quot;) == &quot;c&quot;
+                if g:iswindows
+                    exe &quot;:setlocal makeprg=&quot;.s:windows_CFlags
+                else
+                    exe &quot;:setlocal makeprg=&quot;.s:linux_CFlags
+                endif
+                echohl WarningMsg | echo &quot; compiling...&quot;
+                silent make
+            elseif expand(&quot;%:e&quot;) == &quot;cpp&quot; || expand(&quot;%:e&quot;) == &quot;cxx&quot;
+                if g:iswindows
+                    exe &quot;:setlocal makeprg=&quot;.s:windows_CPPFlags
+                else
+                    exe &quot;:setlocal makeprg=&quot;.s:linux_CPPFlags
+                endif
+                echohl WarningMsg | echo &quot; compiling...&quot;
+                silent make
+            endif
+            redraw!
+            if v:shell_error != 0
+                let s:LastShellReturn_C = v:shell_error
+            endif
+            if g:iswindows
+                if s:LastShellReturn_C != 0
+                    exe &quot;:bo cope&quot;
+                    echohl WarningMsg | echo &quot; compilation failed&quot;
+                else
+                    if s:ShowWarning
+                        exe &quot;:bo cw&quot;
+                    endif
+                    echohl WarningMsg | echo &quot; compilation successful&quot;
+                endif
+            else
+                if empty(v:statusmsg)
+                    echohl WarningMsg | echo &quot; compilation successful&quot;
+                else
+                    exe &quot;:bo cope&quot;
+                endif
+            endif
+        else
+            echohl WarningMsg | echo &quot;&quot;Obj_Name&quot;is up to date&quot;
+        endif
+    elseif expand(&quot;%:e&quot;) == &quot;java&quot;
+        let class = expand(&quot;%:p:r&quot;).s:Class_Extension
+        let class_Name = expand(&quot;%:p:t:r&quot;).s:Class_Extension
+        if !filereadable(class) || (filereadable(class) &amp;&amp; (getftime(class) &lt; getftime(Sou)))
+            redraw!
+            exe &quot;:setlocal makeprg=&quot;.s:JavaFlags
+            echohl WarningMsg | echo &quot; compiling...&quot;
+            silent make
+            redraw!
+            if v:shell_error != 0
+                let s:LastShellReturn_C = v:shell_error
+            endif
+            if g:iswindows
+                if s:LastShellReturn_C != 0
+                    exe &quot;:bo cope&quot;
+                    echohl WarningMsg | echo &quot; compilation failed&quot;
+                else
+                    if s:ShowWarning
+                        exe &quot;:bo cw&quot;
+                    endif
+                    echohl WarningMsg | echo &quot; compilation successful&quot;
+                endif
+            else
+                if empty(v:statusmsg)
+                    echohl WarningMsg | echo &quot; compilation successful&quot;
+                else
+                    exe &quot;:bo cope&quot;
+                endif
+            endif
+        else
+            echohl WarningMsg | echo &quot;&quot;class_Name&quot;is up to date&quot;
+        endif
+    else
+        let s:Sou_Error = 1
+        echohl WarningMsg | echo &quot; please choose the correct source file&quot;
+    endif
+    exe &quot;:setlocal makeprg=make&quot;
+endfunc
+ 
+func! Link()
+    call Compile()
+    if s:Sou_Error || s:LastShellReturn_C != 0
+        return
+    endif
+    if expand(&quot;%:e&quot;) == &quot;c&quot; || expand(&quot;%:e&quot;) == &quot;cpp&quot; || expand(&quot;%:e&quot;) == &quot;cxx&quot;
+        let s:LastShellReturn_L = 0
+        let Sou = expand(&quot;%:p&quot;)
+        let Obj = expand(&quot;%:p:r&quot;).s:Obj_Extension
+        if g:iswindows
+            let Exe = expand(&quot;%:p:r&quot;).s:Exe_Extension
+            let Exe_Name = expand(&quot;%:p:t:r&quot;).s:Exe_Extension
+        else
+            let Exe = expand(&quot;%:p:r&quot;)
+            let Exe_Name = expand(&quot;%:p:t:r&quot;)
+        endif
+        let v:statusmsg = &#39;&#39;
+        if filereadable(Obj) &amp;&amp; (getftime(Obj) &gt;= getftime(Sou))
+            redraw!
+            if !executable(Exe) || (executable(Exe) &amp;&amp; getftime(Exe) &lt; getftime(Obj))
+                if expand(&quot;%:e&quot;) == &quot;c&quot;
+                    setlocal makeprg=gcc\ -o\ %&lt;\ %&lt;.o
+                    echohl WarningMsg | echo &quot; linking...&quot;
+                    silent make
+                elseif expand(&quot;%:e&quot;) == &quot;cpp&quot; || expand(&quot;%:e&quot;) == &quot;cxx&quot;
+                    setlocal makeprg=g++\ -o\ %&lt;\ %&lt;.o
+                    echohl WarningMsg | echo &quot; linking...&quot;
+                    silent make
+                endif
+                redraw!
+                if v:shell_error != 0
+                    let s:LastShellReturn_L = v:shell_error
+                endif
+                if g:iswindows
+                    if s:LastShellReturn_L != 0
+                        exe &quot;:bo cope&quot;
+                        echohl WarningMsg | echo &quot; linking failed&quot;
+                    else
+                        if s:ShowWarning
+                            exe &quot;:bo cw&quot;
+                        endif
+                        echohl WarningMsg | echo &quot; linking successful&quot;
+                    endif
+                else
+                    if empty(v:statusmsg)
+                        echohl WarningMsg | echo &quot; linking successful&quot;
+                    else
+                        exe &quot;:bo cope&quot;
+                    endif
+                endif
+            else
+                echohl WarningMsg | echo &quot;&quot;Exe_Name&quot;is up to date&quot;
+            endif
+        endif
+        setlocal makeprg=make
+    elseif expand(&quot;%:e&quot;) == &quot;java&quot;
+        return
+    endif
+endfunc
+ 
+func! Run()
+    let s:ShowWarning = 0
+    call Link()
+    let s:ShowWarning = 1
+    if s:Sou_Error || s:LastShellReturn_C != 0 || s:LastShellReturn_L != 0
+        return
+    endif
+    let Sou = expand(&quot;%:p&quot;)
+    if expand(&quot;%:e&quot;) == &quot;c&quot; || expand(&quot;%:e&quot;) == &quot;cpp&quot; || expand(&quot;%:e&quot;) == &quot;cxx&quot;
+        let Obj = expand(&quot;%:p:r&quot;).s:Obj_Extension
+        if g:iswindows
+            let Exe = expand(&quot;%:p:r&quot;).s:Exe_Extension
+        else
+            let Exe = expand(&quot;%:p:r&quot;)
+        endif
+        if executable(Exe) &amp;&amp; getftime(Exe) &gt;= getftime(Obj) &amp;&amp; getftime(Obj) &gt;= getftime(Sou)
+            redraw!
+            echohl WarningMsg | echo &quot; running...&quot;
+            if g:iswindows
+                exe &quot;:!%&lt;.exe&quot;
+            else
+                if g:isGUI
+                    exe &quot;:!gnome-terminal -x bash -c &#39;./%&lt;; echo; echo 请按 Enter 键继续; read&#39;&quot;
+                else
+                    exe &quot;:!clear; ./%&lt;&quot;
+                endif
+            endif
+            redraw!
+            echohl WarningMsg | echo &quot; running finish&quot;
+        endif
+    elseif expand(&quot;%:e&quot;) == &quot;java&quot;
+        let class = expand(&quot;%:p:r&quot;).s:Class_Extension
+        if getftime(class) &gt;= getftime(Sou)
+            redraw!
+            echohl WarningMsg | echo &quot; running...&quot;
+            if g:iswindows
+                exe &quot;:!java %&lt;&quot;
+            else
+                if g:isGUI
+                    exe &quot;:!gnome-terminal -x bash -c &#39;java %&lt;; echo; echo 请按 Enter 键继续; read&#39;&quot;
+                else
+                    exe &quot;:!clear; java %&lt;&quot;
+                endif
+            endif
+            redraw!
+            echohl WarningMsg | echo &quot; running finish&quot;
+        endif
+    endif
+endfunc
+ 
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; 在浏览器中预览 Html 或 PHP 文件 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 修改前请先通读此模块，明白了再改以避免错误
+ 
+&quot; F5 加浏览器名称缩写调用浏览器预览，启用前先确定有安装相应浏览器，并在下面的配置好其安装目录
+if g:iswindows
+    &quot;以下为只支持Windows系统的浏览器
+ 
+    &quot; 调用系统IE浏览器预览，如果已卸载可将其注释
+    nmap &lt;F5&gt;ie :call ViewInBrowser(&quot;ie&quot;)&lt;cr&gt;
+    imap &lt;F5&gt;ie &lt;ESC&gt;:call ViewInBrowser(&quot;ie&quot;)&lt;cr&gt;
+ 
+    &quot; 调用IETester(IE测试工具)预览，如果有安装可取消注释
+    &quot; nmap &lt;F5&gt;ie6 :call ViewInBrowser(&quot;ie6&quot;)&lt;cr&gt;
+    &quot; imap &lt;F5&gt;ie6 &lt;ESC&gt;:call ViewInBrowser(&quot;ie6&quot;)&lt;cr&gt;
+    &quot; nmap &lt;F5&gt;ie7 :call ViewInBrowser(&quot;ie7&quot;)&lt;cr&gt;
+    &quot; imap &lt;F5&gt;ie7 &lt;ESC&gt;:call ViewInBrowser(&quot;ie7&quot;)&lt;cr&gt;
+    &quot; nmap &lt;F5&gt;ie8 :call ViewInBrowser(&quot;ie8&quot;)&lt;cr&gt;
+    &quot; imap &lt;F5&gt;ie8 &lt;ESC&gt;:call ViewInBrowser(&quot;ie8&quot;)&lt;cr&gt;
+    &quot; nmap &lt;F5&gt;ie9 :call ViewInBrowser(&quot;ie9&quot;)&lt;cr&gt;
+    &quot; imap &lt;F5&gt;ie9 &lt;ESC&gt;:call ViewInBrowser(&quot;ie9&quot;)&lt;cr&gt;
+    &quot; nmap &lt;F5&gt;ie10 :call ViewInBrowser(&quot;ie10&quot;)&lt;cr&gt;
+    &quot; imap &lt;F5&gt;ie10 &lt;ESC&gt;:call ViewInBrowser(&quot;ie10&quot;)&lt;cr&gt;
+    &quot; nmap &lt;F5&gt;iea :call ViewInBrowser(&quot;iea&quot;)&lt;cr&gt;
+    &quot; imap &lt;F5&gt;iea &lt;ESC&gt;:call ViewInBrowser(&quot;iea&quot;)&lt;cr&gt;
+elseif g:islinux
+    &quot;以下为只支持Linux系统的浏览器
+    &quot;暂未配置，待有时间再弄了
+endif
+ 
+&quot;以下为支持Windows与Linux系统的浏览器
+ 
+&quot; 调用Firefox浏览器预览，如果有安装可取消注释
+&quot; nmap &lt;F5&gt;ff :call ViewInBrowser(&quot;ff&quot;)&lt;cr&gt;
+&quot; imap &lt;F5&gt;ff &lt;ESC&gt;:call ViewInBrowser(&quot;ff&quot;)&lt;cr&gt;
+ 
+&quot; 调用Maxthon(遨游)浏览器预览，如果有安装可取消注释
+&quot; nmap &lt;F5&gt;ay :call ViewInBrowser(&quot;ay&quot;)&lt;cr&gt;
+&quot; imap &lt;F5&gt;ay &lt;ESC&gt;:call ViewInBrowser(&quot;ay&quot;)&lt;cr&gt;
+ 
+&quot; 调用Opera浏览器预览，如果有安装可取消注释
+&quot; nmap &lt;F5&gt;op :call ViewInBrowser(&quot;op&quot;)&lt;cr&gt;
+&quot; imap &lt;F5&gt;op &lt;ESC&gt;:call ViewInBrowser(&quot;op&quot;)&lt;cr&gt;
+ 
+&quot; 调用Chrome浏览器预览，如果有安装可取消注释
+&quot; nmap &lt;F5&gt;cr :call ViewInBrowser(&quot;cr&quot;)&lt;cr&gt;
+&quot; imap &lt;F5&gt;cr &lt;ESC&gt;:call ViewInBrowser(&quot;cr&quot;)&lt;cr&gt;
+ 
+&quot; 浏览器调用函数
+function! ViewInBrowser(name)
+    if expand(&quot;%:e&quot;) == &quot;php&quot; || expand(&quot;%:e&quot;) == &quot;html&quot;
+        exe &quot;:update&quot;
+        if g:iswindows
+            &quot;获取要预览的文件路径，并将路径中的&#39;\&#39;替换为&#39;/&#39;，同时将路径文字的编码转换为gbk（同cp936）
+            let file = iconv(substitute(expand(&quot;%:p&quot;), &#39;\&#39;, &#39;/&#39;, &quot;g&quot;), &quot;utf-8&quot;, &quot;gbk&quot;)
+ 
+            &quot;浏览器路径设置，路径中使用&#39;/&#39;斜杠，更改路径请更改双引号里的内容
+            &quot;下面只启用了系统IE浏览器，如需启用其它的可将其取消注释（得先安装，并配置好安装路径），也可按需增减
+            let SystemIE = &quot;C:/progra~1/intern~1/iexplore.exe&quot;  &quot;系统自带IE目录
+            &quot; let IETester = &quot;F:/IETester/IETester.exe&quot;           &quot;IETester程序目录（可按实际更改）
+            &quot; let Chrome = &quot;F:/Chrome/Chrome.exe&quot;                 &quot;Chrome程序目录（可按实际更改）
+            &quot; let Firefox = &quot;F:/Firefox/Firefox.exe&quot;              &quot;Firefox程序目录（可按实际更改）
+            &quot; let Opera = &quot;F:/Opera/opera.exe&quot;                    &quot;Opera程序目录（可按实际更改）
+            &quot; let Maxthon = &quot;C:/Progra~2/Maxthon/Bin/Maxthon.exe&quot; &quot;Maxthon程序目录（可按实际更改）
+ 
+            &quot;本地虚拟服务器设置，我测试的是phpStudy2014，可根据自己的修改，更改路径请更改双引号里的内容
+            let htdocs =&quot;F:/phpStudy2014/WWW/&quot;                  &quot;虚拟服务器地址或目录（可按实际更改）
+            let url = &quot;localhost&quot;                               &quot;虚拟服务器网址（可按实际更改）
+        elseif g:islinux
+            &quot;暂时还没有配置，有时间再弄了。
+        endif
+ 
+        &quot;浏览器调用缩写，可根据实际增减，注意，上面浏览器路径中没有定义过的变量（等号右边为变量）不能出现在下面哟（可将其注释或删除）
+        let l:browsers = {}                             &quot;定义缩写字典变量，此行不能删除或注释
+        &quot; let l:browsers[&quot;cr&quot;] = Chrome                   &quot;Chrome浏览器缩写
+        &quot; let l:browsers[&quot;ff&quot;] = Firefox                  &quot;Firefox浏览器缩写
+        &quot; let l:browsers[&quot;op&quot;] = Opera                    &quot;Opera浏览器缩写
+        &quot; let l:browsers[&quot;ay&quot;] = Maxthon                  &quot;遨游浏览器缩写
+        let l:browsers[&quot;ie&quot;] = SystemIE                 &quot;系统IE浏览器缩写
+        &quot; let l:browsers[&quot;ie6&quot;] = IETester.&quot;-ie6&quot;         &quot;调用IETESTER工具以IE6预览缩写（变量加参数）
+        &quot; let l:browsers[&quot;ie7&quot;] = IETester.&quot;-ie7&quot;         &quot;调用IETESTER工具以IE7预览缩写（变量加参数）
+        &quot; let l:browsers[&quot;ie8&quot;] = IETester.&quot;-ie8&quot;         &quot;调用IETESTER工具以IE8预览缩写（变量加参数）
+        &quot; let l:browsers[&quot;ie9&quot;] = IETester.&quot;-ie9&quot;         &quot;调用IETESTER工具以IE9预览缩写（变量加参数）
+        &quot; let l:browsers[&quot;ie10&quot;] = IETester.&quot;-ie10&quot;       &quot;调用IETESTER工具以IE10预览缩写（变量加参数）
+        &quot; let l:browsers[&quot;iea&quot;] = IETester.&quot;-al&quot;          &quot;调用IETESTER工具以支持的所有IE版本预览缩写（变量加参数）
+ 
+        if stridx(file, htdocs) == -1   &quot;文件不在本地虚拟服务器目录，则直接预览（但不能解析PHP文件）
+           exec &quot;:silent !start &quot;. l:browsers[a:name] .&quot; file://&quot; . file
+        else    &quot;文件在本地虚拟服务器目录，则调用本地虚拟服务器解析预览（先启动本地虚拟服务器）
+            let file = substitute(file, htdocs, &quot;http://&quot;.url.&quot;/&quot;, &quot;g&quot;)    &quot;转换文件路径为虚拟服务器网址路径
+            exec &quot;:silent !start &quot;. l:browsers[a:name] file
+        endif
+    else
+        echohl WarningMsg | echo &quot; please choose the correct source file&quot;
+    endif
+endfunction
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; 其它配置 &gt;
+&quot; -----------------------------------------------------------------------------
+set writebackup                             &quot;保存文件前建立备份，保存成功后删除该备份
+set nobackup                                &quot;设置无备份文件
+&quot; set noswapfile                              &quot;设置无临时文件
+&quot; set vb t_vb=                                &quot;关闭提示音
+ 
+ 
+&quot; =============================================================================
+&quot;                          &lt;&lt; 以下为常用插件配置 &gt;&gt;
+&quot; =============================================================================
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; a.vim 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 用于切换C/C++头文件
+&quot; :A     ---切换头文件并独占整个窗口
+&quot; :AV    ---切换头文件并垂直分割窗口
+&quot; :AS    ---切换头文件并水平分割窗口
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; Align 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 一个对齐的插件，用来——排版与对齐代码，功能强大，不过用到的机会不多
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; auto-pairs 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 用于括号与引号自动补全，不过会与函数原型提示插件echofunc冲突
+&quot; 所以我就没有加入echofunc插件
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; BufExplorer 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 快速轻松的在缓存中切换（相当于另一种多个文件间的切换方式）
+&quot; &lt;Leader&gt;be 在当前窗口显示缓存列表并打开选定文件
+&quot; &lt;Leader&gt;bs 水平分割窗口显示缓存列表，并在缓存列表窗口中打开选定文件
+&quot; &lt;Leader&gt;bv 垂直分割窗口显示缓存列表，并在缓存列表窗口中打开选定文件
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; ccvext.vim 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 用于对指定文件自动生成tags与cscope文件并连接
+&quot; 如果是Windows系统, 则生成的文件在源文件所在盘符根目录的.symbs目录下(如: X:\.symbs\)
+&quot; 如果是Linux系统, 则生成的文件在~/.symbs/目录下
+&quot; 具体用法可参考www.vim.org中此插件的说明
+&quot; &lt;Leader&gt;sy 自动生成tags与cscope文件并连接
+&quot; &lt;Leader&gt;sc 连接已存在的tags与cscope文件
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; cSyntaxAfter 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 高亮括号与运算符等
+au! BufRead,BufNewFile,BufEnter *.{c,cpp,h,java,javascript} call CSyntaxAfter()
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; ctrlp.vim 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 一个全路径模糊文件，缓冲区，最近最多使用，... 检索插件；详细帮助见 :h ctrlp
+&quot; 常规模式下输入：Ctrl + p 调用插件
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; emmet-vim（前身为Zen coding） 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; HTML/CSS代码快速编写神器，详细帮助见 :h emmet.txt
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; indentLine 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 用于显示对齐线，与 indent_guides 在显示方式上不同，根据自己喜好选择了
+&quot; 在终端上会有屏幕刷新的问题，这个问题能解决有更好了
+&quot; 开启/关闭对齐线
+nmap &lt;leader&gt;il :IndentLinesToggle&lt;CR&gt;
+ 
+&quot; 设置Gvim的对齐线样式
+if g:isGUI
+    let g:indentLine_char = &quot;┊&quot;
+    let g:indentLine_first_char = &quot;┊&quot;
+endif
+ 
+&quot; 设置终端对齐线颜色，如果不喜欢可以将其注释掉采用默认颜色
+let g:indentLine_color_term = 239
+ 
+&quot; 设置 GUI 对齐线颜色，如果不喜欢可以将其注释掉采用默认颜色
+&quot; let g:indentLine_color_gui = &#39;#A4E57E&#39;
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; vim-javacompleteex（也就是 javacomplete 增强版）插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; java 补全插件
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; Mark--Karkat（也就是 Mark） 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 给不同的单词高亮，表明不同的变量时很有用，详细帮助见 :h mark.txt
+ 
+&quot; &quot; -----------------------------------------------------------------------------
+&quot; &quot;  &lt; MiniBufExplorer 插件配置 &gt;
+&quot; &quot; -----------------------------------------------------------------------------
+&quot; &quot; 快速浏览和操作Buffer
+&quot; &quot; 主要用于同时打开多个文件并相与切换
+ 
+&quot; &quot; let g:miniBufExplMapWindowNavArrows = 1     &quot;用Ctrl加方向键切换到上下左右的窗口中去
+&quot; let g:miniBufExplMapWindowNavVim = 1        &quot;用&lt;C-k,j,h,l&gt;切换到上下左右的窗口中去
+&quot; let g:miniBufExplMapCTabSwitchBufs = 1      &quot;功能增强（不过好像只有在Windows中才有用）
+&quot; &quot;                                            &lt;C-Tab&gt; 向前循环切换到每个buffer上,并在但前窗口打开
+&quot; &quot;                                            &lt;C-S-Tab&gt; 向后循环切换到每个buffer上,并在当前窗口打开
+ 
+&quot; 在不使用 MiniBufExplorer 插件时也可用&lt;C-k,j,h,l&gt;切换到上下左右的窗口中去
+noremap &lt;c-k&gt; &lt;c-w&gt;k
+noremap &lt;c-j&gt; &lt;c-w&gt;j
+noremap &lt;c-h&gt; &lt;c-w&gt;h
+noremap &lt;c-l&gt; &lt;c-w&gt;l
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; neocomplcache 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 关键字补全、文件路径补全、tag补全等等，各种，非常好用，速度超快。
+let g:neocomplcache_enable_at_startup = 1     &quot;vim 启动时启用插件
+&quot; let g:neocomplcache_disable_auto_complete = 1 &quot;不自动弹出补全列表
+&quot; 在弹出补全列表后用 &lt;c-p&gt; 或 &lt;c-n&gt; 进行上下选择效果比较好
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; nerdcommenter 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 我主要用于C/C++代码注释(其它的也行)
+&quot; 以下为插件默认快捷键，其中的说明是以C/C++为例的，其它语言类似
+&quot; &lt;Leader&gt;ci 以每行一个 /* */ 注释选中行(选中区域所在行)，再输入则取消注释
+&quot; &lt;Leader&gt;cm 以一个 /* */ 注释选中行(选中区域所在行)，再输入则称重复注释
+&quot; &lt;Leader&gt;cc 以每行一个 /* */ 注释选中行或区域，再输入则称重复注释
+&quot; &lt;Leader&gt;cu 取消选中区域(行)的注释，选中区域(行)内至少有一个 /* */
+&quot; &lt;Leader&gt;ca 在/*...*/与//这两种注释方式中切换（其它语言可能不一样了）
+&quot; &lt;Leader&gt;cA 行尾注释
+let NERDSpaceDelims = 1                     &quot;在左注释符之后，右注释符之前留有空格
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; nerdtree 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 有目录村结构的文件浏览插件
+ 
+&quot; 常规模式下输入 F2 调用插件
+nmap &lt;F2&gt; :NERDTreeToggle&lt;CR&gt;
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; omnicppcomplete 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 用于C/C++代码补全，这种补全主要针对命名空间、类、结构、共同体等进行补全，详细
+&quot; 说明可以参考帮助或网络教程等
+&quot; 使用前先执行如下 ctags 命令（本配置中可以直接使用 ccvext 插件来执行以下命令）
+&quot; ctags -R --c++-kinds=+p --fields=+iaS --extra=+q
+&quot; 我使用上面的参数生成标签后，对函数使用跳转时会出现多个选择
+&quot; 所以我就将--c++-kinds=+p参数给去掉了，如果大侠有什么其它解决方法希望不要保留呀
+set completeopt=menu                        &quot;关闭预览窗口
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; powerline 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 状态栏插件，更好的状态栏效果
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; repeat 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 主要用&quot;.&quot;命令来重复上次插件使用的命令
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; snipMate 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 用于各种代码补全，这种补全是一种对代码中的词与代码块的缩写补全，详细用法可以参
+&quot; 考使用说明或网络教程等。不过有时候也会与 supertab 插件在补全时产生冲突，如果大
+&quot; 侠有什么其它解决方法希望不要保留呀
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; SrcExpl 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 增强源代码浏览，其功能就像Windows中的&quot;Source Insight&quot;
+nmap &lt;F3&gt; :SrcExplToggle&lt;CR&gt;                &quot;打开/闭浏览窗口
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; std_c 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 用于增强C语法高亮
+ 
+&quot; 启用 // 注视风格
+let c_cpp_comments = 0
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; surround 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 快速给单词/句子两边增加符号（包括html标签），缺点是不能用&quot;.&quot;来重复命令
+&quot; 不过 repeat 插件可以解决这个问题，详细帮助见 :h surround.txt
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; Syntastic 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 用于保存文件时查检语法
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; Tagbar 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 相对 TagList 能更好的支持面向对象
+ 
+&quot; 常规模式下输入 tb 调用插件，如果有打开 TagList 窗口则先将其关闭
+nmap tb :TlistClose&lt;CR&gt;:TagbarToggle&lt;CR&gt;
+ 
+let g:tagbar_width=30                       &quot;设置窗口宽度
+&quot; let g:tagbar_left=1                         &quot;在左侧窗口中显示
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; TagList 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 高效地浏览源码, 其功能就像vc中的workpace
+&quot; 那里面列出了当前文件中的所有宏,全局变量, 函数名等
+ 
+&quot; 常规模式下输入 tl 调用插件，如果有打开 Tagbar 窗口则先将其关闭
+nmap tl :TagbarClose&lt;CR&gt;:Tlist&lt;CR&gt;
+ 
+let Tlist_Show_One_File=1                   &quot;只显示当前文件的tags
+&quot; let Tlist_Enable_Fold_Column=0              &quot;使taglist插件不显示左边的折叠行
+let Tlist_Exit_OnlyWindow=1                 &quot;如果Taglist窗口是最后一个窗口则退出Vim
+let Tlist_File_Fold_Auto_Close=1            &quot;自动折叠
+let Tlist_WinWidth=30                       &quot;设置窗口宽度
+let Tlist_Use_Right_Window=1                &quot;在右侧窗口中显示
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; txtbrowser 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 用于文本文件生成标签与与语法高亮（调用TagList插件生成标签，如果可以）
+au BufRead,BufNewFile *.txt setlocal ft=txt
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; ZoomWin 插件配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 用于分割窗口的最大化与还原
+&quot; 常规模式下按快捷键 &lt;c-w&gt;o 在最大化与还原间切换
+ 
+&quot; =============================================================================
+&quot;                          &lt;&lt; 以下为常用工具配置 &gt;&gt;
+&quot; =============================================================================
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; cscope 工具配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 用Cscope自己的话说 - &quot;你可以把它当做是超过频的ctags&quot;
+if has(&quot;cscope&quot;)
+    &quot;设定可以使用 quickfix 窗口来查看 cscope 结果
+    set cscopequickfix=s-,c-,d-,i-,t-,e-
+    &quot;使支持用 Ctrl+]  和 Ctrl+t 快捷键在代码间跳转
+    set cscopetag
+    &quot;如果你想反向搜索顺序设置为1
+    set csto=0
+    &quot;在当前目录中添加任何数据库
+    if filereadable(&quot;cscope.out&quot;)
+        cs add cscope.out
+    &quot;否则添加数据库环境中所指出的
+    elseif $CSCOPE_DB != &quot;&quot;
+        cs add $CSCOPE_DB
+    endif
+    set cscopeverbose
+    &quot;快捷键设置
+    nmap &lt;C-\&gt;s :cs find s &lt;C-R&gt;=expand(&quot;&lt;cword&gt;&quot;)&lt;CR&gt;&lt;CR&gt;
+    nmap &lt;C-\&gt;g :cs find g &lt;C-R&gt;=expand(&quot;&lt;cword&gt;&quot;)&lt;CR&gt;&lt;CR&gt;
+    nmap &lt;C-\&gt;c :cs find c &lt;C-R&gt;=expand(&quot;&lt;cword&gt;&quot;)&lt;CR&gt;&lt;CR&gt;
+    nmap &lt;C-\&gt;t :cs find t &lt;C-R&gt;=expand(&quot;&lt;cword&gt;&quot;)&lt;CR&gt;&lt;CR&gt;
+    nmap &lt;C-\&gt;e :cs find e &lt;C-R&gt;=expand(&quot;&lt;cword&gt;&quot;)&lt;CR&gt;&lt;CR&gt;
+    nmap &lt;C-\&gt;f :cs find f &lt;C-R&gt;=expand(&quot;&lt;cfile&gt;&quot;)&lt;CR&gt;&lt;CR&gt;
+    nmap &lt;C-\&gt;i :cs find i ^&lt;C-R&gt;=expand(&quot;&lt;cfile&gt;&quot;)&lt;CR&gt;$&lt;CR&gt;
+    nmap &lt;C-\&gt;d :cs find d &lt;C-R&gt;=expand(&quot;&lt;cword&gt;&quot;)&lt;CR&gt;&lt;CR&gt;
+endif
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; ctags 工具配置 &gt;
+&quot; -----------------------------------------------------------------------------
+&quot; 对浏览代码非常的方便,可以在函数,变量之间跳转等
+set tags=./tags;                            &quot;向上级目录递归查找tags文件（好像只有在Windows下才有用）
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; gvimfullscreen 工具配置 &gt; 请确保已安装了工具
+&quot; -----------------------------------------------------------------------------
+&quot; 用于 Windows Gvim 全屏窗口，可用 F11 切换
+&quot; 全屏后再隐藏菜单栏、工具栏、滚动条效果更好
+if (g:iswindows &amp;&amp; g:isGUI)
+    nmap &lt;F11&gt; &lt;Esc&gt;:call libcallnr(&quot;gvimfullscreen.dll&quot;, &quot;ToggleFullScreen&quot;, 0)&lt;CR&gt;
+endif
+ 
+&quot; -----------------------------------------------------------------------------
+&quot;  &lt; vimtweak 工具配置 &gt; 请确保以已装了工具
+&quot; -----------------------------------------------------------------------------
+&quot; 这里只用于窗口透明与置顶
+&quot; 常规模式下 Ctrl + Up（上方向键） 增加不透明度，Ctrl + Down（下方向键） 减少不透明度，&lt;Leader&gt;t 窗口置顶与否切换
+if (g:iswindows &amp;&amp; g:isGUI)
+    let g:Current_Alpha = 255
+    let g:Top_Most = 0
+    func! Alpha_add()
+        let g:Current_Alpha = g:Current_Alpha + 10
+        if g:Current_Alpha &gt; 255
+            let g:Current_Alpha = 255
+        endif
+        call libcallnr(&quot;vimtweak.dll&quot;,&quot;SetAlpha&quot;,g:Current_Alpha)
+    endfunc
+    func! Alpha_sub()
+        let g:Current_Alpha = g:Current_Alpha - 10
+        if g:Current_Alpha &lt; 155
+            let g:Current_Alpha = 155
+        endif
+        call libcallnr(&quot;vimtweak.dll&quot;,&quot;SetAlpha&quot;,g:Current_Alpha)
+    endfunc
+    func! Top_window()
+        if  g:Top_Most == 0
+            call libcallnr(&quot;vimtweak.dll&quot;,&quot;EnableTopMost&quot;,1)
+            let g:Top_Most = 1
+        else
+            call libcallnr(&quot;vimtweak.dll&quot;,&quot;EnableTopMost&quot;,0)
+            let g:Top_Most = 0
+        endif
+    endfunc
+ 
+    &quot;快捷键设置
+    nmap &lt;c-up&gt; :call Alpha_add()&lt;CR&gt;
+    nmap &lt;c-down&gt; :call Alpha_sub()&lt;CR&gt;
+    nmap &lt;leader&gt;t :call Top_window()&lt;CR&gt;
+endif
+ 
+&quot; =============================================================================
+&quot;                          &lt;&lt; 以下为常用自动命令配置 &gt;&gt;
+&quot; =============================================================================
+ 
+&quot; 自动切换目录为当前编辑文件所在目录
+au BufRead,BufNewFile,BufEnter * cd %:p:h
+ 
+&quot; =============================================================================
+&quot;                     &lt;&lt; windows 下解决 Quickfix 乱码问题 &gt;&gt;
+&quot; =============================================================================
+&quot; windows 默认编码为 cp936，而 Gvim(Vim) 内部编码为 utf-8，所以常常输出为乱码
+&quot; 以下代码可以将编码为 cp936 的输出信息转换为 utf-8 编码，以解决输出乱码问题
+&quot; 但好像只对输出信息全部为中文才有满意的效果，如果输出信息是中英混合的，那可能
+&quot; 不成功，会造成其中一种语言乱码，输出信息全部为英文的好像不会乱码
+&quot; 如果输出信息为乱码的可以试一下下面的代码，如果不行就还是给它注释掉
+ 
+&quot; if g:iswindows
+&quot;     function QfMakeConv()
+&quot;         let qflist = getqflist()
+&quot;         for i in qflist
+&quot;            let i.text = iconv(i.text, &quot;cp936&quot;, &quot;utf-8&quot;)
+&quot;         endfor
+&quot;         call setqflist(qflist)
+&quot;      endfunction
+&quot;      au QuickfixCmdPost make call QfMakeConv()
+&quot; endif
+ 
+&quot; =============================================================================
+&quot;                          &lt;&lt; 其它 &gt;&gt;
+&quot; =============================================================================
+&quot; 注：上面配置中的&quot;&lt;Leader&gt;&quot;在本软件中设置为&quot;\&quot;键（引号里的反斜杠），如&lt;Leader&gt;t
+&quot; 指在常规模式下按&quot;\&quot;键加&quot;t&quot;键，这里不是同时按，而是先按&quot;\&quot;键后按&quot;t&quot;键，间隔在一
+&quot; 秒内，而&lt;Leader&gt;cs是先按&quot;\&quot;键再按&quot;c&quot;又再按&quot;s&quot;键；如要修改&quot;&lt;leader&gt;&quot;键，可以把
+&quot; 下面的设置取消注释，并修改双引号中的键为你想要的，如修改为逗号键。
+ 
+&quot; let mapleader = &quot;,&quot;
 </code></pre>
-
-<p>平衡组的一个最常见的应用就是匹配HTML,下面这个例子可以匹配嵌套的&lt;div&gt;<br/>
-标签：<code>&lt;div[^&gt;]*&gt;[^&lt;&gt;]*(((?&#39;Open&#39;&lt;div[^&gt;]*&gt;)[^&lt;&gt;]*)+((?&#39;-Open&#39;&lt;/div&gt;)[^&lt;&gt;]*)+)*(?(Open)(?!))&lt;/div&gt;.</code></p>
-
-<h2 id="toc_19">还有些什么东西没提到</h2>
-
-<p>上边已经描述了构造正则表达式的大量元素，但是还有很多没有提到的东西。下面是一些未提到的元素的列表，包含语法和简单的说明。你可以在网上找到更详细的参考资料来学习它们--当你需要用到它们的时候。如果你安装了MSDN Library,你也可以在里面找到.net下正则表达式详细的文档。这里的介绍很简略，如果你需要更详细的信息，而又没有在电脑上安装MSDN Library,可以查看关于正则表达式语言元素的MSDN在线文档。</p>
-
-<h3 id="toc_20">表7.尚未详细讨论的语法</h3>
-
-<table>
-<thead>
-<tr>
-<th style="text-align: center">代码/语法</th>
-<th>说明</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td style="text-align: center">\a</td>
-<td>报警字符(打印它的效果是电脑嘀一声)</td>
-</tr>
-<tr>
-<td style="text-align: center">\b</td>
-<td>通常是单词分界位置，但如果在字符类里使用代表退格</td>
-</tr>
-<tr>
-<td style="text-align: center">\t</td>
-<td>制表符，Tab</td>
-</tr>
-<tr>
-<td style="text-align: center">\r</td>
-<td>回车</td>
-</tr>
-<tr>
-<td style="text-align: center">\v</td>
-<td>竖向制表符</td>
-</tr>
-<tr>
-<td style="text-align: center">\f</td>
-<td>换页符</td>
-</tr>
-<tr>
-<td style="text-align: center">\n</td>
-<td>换行符</td>
-</tr>
-<tr>
-<td style="text-align: center">\e</td>
-<td>Escape</td>
-</tr>
-<tr>
-<td style="text-align: center">\0nn</td>
-<td>ASCII代码中八进制代码为nn的字符</td>
-</tr>
-<tr>
-<td style="text-align: center">\xnn</td>
-<td>ASCII代码中十六进制代码为nn的字符</td>
-</tr>
-<tr>
-<td style="text-align: center">\unnnn  Unicode</td>
-<td>代码中十六进制代码为nnnn的字符</td>
-</tr>
-<tr>
-<td style="text-align: center">\cN</td>
-<td>ASCII控制字符。比如\cC代表Ctrl+C</td>
-</tr>
-<tr>
-<td style="text-align: center">\A</td>
-<td>字符串开头(类似<sup>，但不受处理多行选项的影响)</sup></td>
-</tr>
-<tr>
-<td style="text-align: center">\Z</td>
-<td>字符串结尾或行尾(不受处理多行选项的影响)</td>
-</tr>
-<tr>
-<td style="text-align: center">\z</td>
-<td>字符串结尾(类似$，但不受处理多行选项的影响)</td>
-</tr>
-<tr>
-<td style="text-align: center">\G</td>
-<td>当前搜索的开头</td>
-</tr>
-<tr>
-<td style="text-align: center">\p{name}</td>
-<td>Unicode中命名为name的字符类，例如\p{IsGreek}</td>
-</tr>
-<tr>
-<td style="text-align: center">(?&gt;exp)</td>
-<td>贪婪子表达式</td>
-</tr>
-<tr>
-<td style="text-align: center">(?<x>-<y>exp)</td>
-<td>平衡组</td>
-</tr>
-<tr>
-<td style="text-align: center">(?im-nsx:exp)</td>
-<td>在子表达式exp中改变处理选项</td>
-</tr>
-<tr>
-<td style="text-align: center">(?im-nsx)</td>
-<td>为表达式后面的部分改变处理选项</td>
-</tr>
-<tr>
-<td style="text-align: center">(?(exp)yes|no)</td>
-<td>把exp当作零宽正向先行断言，如果在这个位置能匹配，使用yes作为此组的表达式；否则使用no</td>
-</tr>
-<tr>
-<td style="text-align: center">(?(exp)yes)</td>
-<td>同上，只是使用空表达式作为no</td>
-</tr>
-<tr>
-<td style="text-align: center">(?(name)yes|no)</td>
-<td>如果命名为name的组捕获到了内容，使用yes作为表达式；否则使用no</td>
-</tr>
-<tr>
-<td style="text-align: center">(?(name)yes)</td>
-<td>同上，只是使用空表达式作为no</td>
-</tr>
-</tbody>
-</table>
-
-<h2 id="toc_21">联系作者</h2>
-
-<p>好吧,我承认,我骗了你,读到这里你肯定花了不止30分钟.相信我,这是我的错,而不是因为你太笨.我之所以说<q>30分钟</q>,是为了让你有信心,有耐心继续下去.既然你看到了这里,那证明我的阴谋成功了.被忽悠的感觉很爽吧？<br/>
-要投诉我,或者觉得我其实可以忽悠得更高明,欢迎来我的微博让我知道. 如果你有关于正则表达式的问题, 可以到 stackoverflow 网站上提问, 记得要添加 regex 标签. 如果你更习惯于用中文交流, 可以到微博上用 #正则# 标签提出问题.<br/>
-网上的资源及本文参考文献</p>
-
-<p><a href="http://item.jd.com/11070361.html">精通正则表达式（第3版）</a><br/>
-<a href="https://msdn.microsoft.com/zh-cn/library/hs600312.aspx">微软的正则表达式教程</a><br/>
-<a href="https://msdn.microsoft.com/zh-cn/library/system.text.regularexpressions.regex.aspx">System.Text.RegularExpressions.Regex类(MSDN)</a><br/>
-<a href="http://www.regular-expressions.info">专业的正则表达式教学网站(英文)</a><br/>
-<a href="http://weblogs.asp.net/whaggard/377025">关于.Net下的平衡组的详细讨论（英文）</a></p>
-
-<h2 id="toc_22">更新纪录</h2>
-
-<p>2006-3-27 第一版<br/>
-2006-10-12 第二版<br/>
-修正了几个细节上的错误和不准确的地方<br/>
-增加了对处理中文时的一些说明<br/>
-更改了几个术语的翻译（采用了MSDN的翻译方式）<br/>
-增加了平衡组的介绍<br/>
-放弃了对The Regulator的介绍，改用Regex Tester<br/>
-2007-3-12 V2.1<br/>
-修正了几个小的错误<br/>
-增加了对处理选项(RegexOptions)的介绍<br/>
-2007-5-28 V2.2<br/>
-重新组织了对零宽断言的介绍<br/>
-删除了几个不太合适的示例，添加了几个实用的示例<br/>
-其它一些微小的更改<br/>
-2007-8-3 V2.21<br/>
-修改了几处文字错误<br/>
-修改/添加了对$,\b的精确说明<br/>
-承认了作者是个骗子<br/>
-给RegexTester添加了Singleline选项的相关功能<br/>
-2008-4-13 v2.3<br/>
-调整了部分章节的次序<br/>
-修改了页面布局，删除了专门的参考节<br/>
-针对读者的反馈，调整了部分内容<br/>
-2009-4-11 v2.31<br/>
-修改了几处文字错误<br/>
-添加了一些注释说明<br/>
-调整了一些措词<br/>
-2011-8-17 v2.32<br/>
-更改了工具介绍，换用自行开发的正则表达式测试器<br/>
-2013-1-10 v2.33<br/>
-说明包含前导0的IP地址是合法的</p>
 
 
 			
